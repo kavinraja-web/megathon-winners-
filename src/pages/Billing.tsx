@@ -83,10 +83,8 @@ const Billing = () => {
     } else {
       if (parsedQr) {
         setUnrecognizedQrData(parsedQr);
-        toast.error('Product not found in inventory. Please set pricing to add it.');
       } else {
         setUnrecognizedQrData(null);
-        toast.error('Product not found. Please add this product to inventory.');
       }
       setScannedProduct(null);
       setAvailableBatches([]);

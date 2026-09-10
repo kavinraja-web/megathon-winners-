@@ -75,11 +75,9 @@ const Reports = () => {
 
   const handlePrint = () => {
     if (!selectedCustomer) {
-      toast.error('Please select a customer first');
       return;
     }
     if (reportItems.length === 0) {
-      toast.error('Please add at least one item to the report');
       return;
     }
     window.print();
