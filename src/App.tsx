@@ -83,7 +83,7 @@ function App() {
                 <Route path="expiry" element={<ExpiryAlerts />} />
                 <Route path="returns" element={<Returns />} />
                 <Route path="logistics" element={<Logistics />} />
-                <Route path="analytics" element={<Analytics />} />
+                <Route path="reports" element={<Analytics />} />
                 <Route path="notifications" element={<Notifications />} />
 
               </Route>
@@ -101,7 +101,7 @@ function App() {
                 <Route path="returns" element={<Returns />} />
                 <Route path="logistics" element={<Logistics />} />
                 <Route path="billing" element={<Billing />} />
-                <Route path="analytics" element={<Analytics />} />
+                <Route path="reports" element={<Analytics />} />
                 <Route path="notifications" element={<Notifications />} />
 
               </Route>

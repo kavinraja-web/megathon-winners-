@@ -80,8 +80,8 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Analytics & AI Reports</h2>
-          <p className="text-slate-500 text-sm">Generate AI-powered insights for sales, stock, and expiring medicines.</p>
+          <h2 className="text-2xl font-bold text-slate-900">Reports</h2>
+          <p className="text-slate-500 text-sm">Generate comprehensive reports for sales, stock, and expiring medicines.</p>
         </div>
       </div>
 
