@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Package, PlusCircle, QrCode, 
   Layers, Truck, ScanLine, AlertTriangle, 
-  Activity, BarChart3, Bell, Building2, Settings, User, LogOut, Search
+  Activity, BarChart3, Bell, Building2, Settings, User, LogOut, Search, FileText, Users
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,6 +15,8 @@ const Sidebar = () => {
     { name: 'Dashboard', path: '/manufacturer/dashboard', icon: LayoutDashboard },
     { name: 'Medicine Batches', path: '/manufacturer/batches', icon: Package },
     { name: 'Add Medicine Batch', path: '/manufacturer/add-batch', icon: PlusCircle },
+    { name: 'Add Customer', path: '/manufacturer/add-customer', icon: Users },
+    { name: 'Reports', path: '/manufacturer/reports', icon: FileText },
     { name: 'QR / Barcode Generator', path: '/manufacturer/qr-generator', icon: QrCode },
     { name: 'Inventory & Stock', path: '/manufacturer/inventory', icon: Layers },
     { name: 'Expiry & Alerts', path: '/manufacturer/expiry-alerts', icon: AlertTriangle },

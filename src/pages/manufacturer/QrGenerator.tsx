@@ -58,23 +58,42 @@ EXPIRY DATE: ${batch.expDate}`.trim();
         <p className="text-slate-500">Generate trackable labels for medicine batches.</p>
       </div>
 
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex gap-4 items-end">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-slate-700 mb-2">Search Batch Number or ID</label>
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
+        <div className="flex-1 relative">
+          <label className="block text-sm font-medium text-slate-700 mb-2">Search medicine or batch</label>
           <div className="relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input 
               type="text" 
-              value={batchId}
-              onChange={(e) => setBatchId(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => { if (searchQuery) setShowSuggestions(true); }}
               className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g. BATCH-PAR-26001"
+              placeholder="e.g. BATCH-PAR-26001 or Paracetamol"
             />
           </div>
+          {showSuggestions && (
+            <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border border-slate-200 max-h-60 overflow-y-auto">
+              {suggestions.length > 0 ? (
+                suggestions.map((batch, index) => (
+                  <div 
+                    key={index} 
+                    className="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0"
+                    onClick={() => selectBatch(batch)}
+                  >
+                    <div className="font-medium text-slate-800">{batch.medicineName} {batch.strength || ''}</div>
+                    <div className="text-sm text-slate-500">Batch: {batch.batchNumber} | Tablet No: {batch.tabletId}</div>
+                    <div className="text-xs text-slate-400">Expiry: {batch.expDate}</div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-4 text-center text-slate-500">
+                  No batches found
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <button onClick={handleSearch} className="px-6 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors font-medium">
-          Generate
-        </button>
       </div>
 
       {validationError && (
@@ -100,35 +119,69 @@ EXPIRY DATE: ${batch.expDate}`.trim();
             </div>
           </div>
           
-          <div className="p-12 bg-slate-50 flex justify-center">
-            <div className="bg-white p-8 border-2 border-slate-300 rounded-xl shadow-sm w-full max-w-sm">
-              <div className="text-center border-b-2 border-slate-200 pb-4 mb-4">
-                <h3 className="text-xl font-bold uppercase tracking-wide text-slate-900">{selectedBatch.medicineName} {selectedBatch.strength}</h3>
-              </div>
-              
-              <div className="flex flex-col items-center justify-center py-4">
-                <div className="bg-white p-2 border-4 border-slate-100 rounded-lg shadow-sm">
-                  <QRCode value={generateQrPayload(selectedBatch)} size={200} level="H" />
+          <div className="p-8 bg-slate-50 flex flex-col md:flex-row gap-8 justify-center items-start">
+            <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-sm flex-1 w-full">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Selected Medicine Details</h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-slate-500 mb-1">Medicine Name</p>
+                  <p className="font-semibold text-slate-900 text-lg">{selectedBatch.medicineName} {selectedBatch.strength || ''}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-slate-500 mb-1">Tablet Number</p>
+                    <p className="font-medium text-slate-900">{selectedBatch.tabletId}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 mb-1">Batch Number</p>
+                    <p className="font-medium text-slate-900">{selectedBatch.batchNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 mb-1">Manufactured Date</p>
+                    <p className="font-medium text-slate-900">{selectedBatch.mfgDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 mb-1">Expiry Date</p>
+                    <p className="font-medium text-slate-900">{selectedBatch.expDate}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 mb-1">MRP</p>
+                    <p className="font-medium text-slate-900">₹{selectedBatch.mrp}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 mb-1">Available Quantity</p>
+                    <p className="font-medium text-slate-900">{selectedBatch.remainingQuantity}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 mb-1">Manufacturer</p>
+                  <p className="font-medium text-slate-900">{selectedBatch.manufacturer}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 mb-1">Batch Status</p>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    selectedBatch.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' :
+                    selectedBatch.status === 'EXPIRED' ? 'bg-red-100 text-red-800' :
+                    'bg-amber-100 text-amber-800'
+                  }`}>
+                    {selectedBatch.status}
+                  </span>
                 </div>
               </div>
-              
-              <div className="mt-4 text-sm font-mono space-y-2 text-slate-800">
-                <div className="flex justify-between border-b border-slate-100 pb-1">
-                  <span className="text-slate-500 font-semibold">Tablet No:</span>
-                  <span className="font-bold">{selectedBatch.tabletId}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-100 pb-1">
-                  <span className="text-slate-500 font-semibold">Batch No:</span>
-                  <span className="font-bold">{selectedBatch.batchNumber}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-100 pb-1">
-                  <span className="text-slate-500 font-semibold">Manufactured:</span>
-                  <span className="font-bold">{selectedBatch.mfgDate}</span>
-                </div>
-                <div className="flex justify-between pb-1">
-                  <span className="text-slate-500 font-semibold">Expiry:</span>
-                  <span className="font-bold">{selectedBatch.expDate}</span>
-                </div>
+            </div>
+
+            <div className="bg-white p-8 border-2 border-slate-300 rounded-xl shadow-sm flex flex-col items-center shrink-0 w-full md:w-auto">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-6">Generated QR Code</h3>
+              <div className="bg-white p-2 border-4 border-slate-100 rounded-lg shadow-sm mb-6">
+                <QRCode value={generateQrPayload(selectedBatch)} size={200} level="H" />
+              </div>
+              <div className="flex flex-col gap-3 w-full">
+                <button className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium w-full">
+                  <Printer size={16} /> Print QR
+                </button>
+                <button className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium w-full">
+                  <Download size={16} /> Download QR
+                </button>
               </div>
             </div>
           </div>

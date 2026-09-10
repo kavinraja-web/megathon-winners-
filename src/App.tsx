@@ -34,6 +34,7 @@ import MfrScanVerify from './pages/manufacturer/ScanVerify';
 import MfrExpiryAlerts from './pages/manufacturer/ExpiryAlerts';
 import MfrSalesActivity from './pages/manufacturer/SalesActivity';
 import MfrReports from './pages/manufacturer/Reports';
+import MfrAddCustomer from './pages/manufacturer/AddCustomer';
 import MfrNotifications from './pages/manufacturer/Notifications';
 import MfrCompanyProfile from './pages/manufacturer/CompanyProfile';
 import MfrSettings from './pages/manufacturer/Settings';
@@ -62,6 +63,7 @@ function App() {
                 <Route path="expiry-alerts" element={<MfrExpiryAlerts />} />
                 <Route path="activity" element={<MfrSalesActivity />} />
                 <Route path="reports" element={<MfrReports />} />
+                <Route path="add-customer" element={<MfrAddCustomer />} />
                 <Route path="notifications" element={<MfrNotifications />} />
                 <Route path="profile" element={<MfrCompanyProfile />} />
                 <Route path="settings" element={<MfrSettings />} />
