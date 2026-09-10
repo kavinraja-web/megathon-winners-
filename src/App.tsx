@@ -3,8 +3,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { POSProvider } from './context/POSContext';
 import Layout from './layouts/Layout';
+import ManufacturerLayout from './layouts/ManufacturerLayout';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
+
+// Regulator / Admin pages
 import Dashboard from './pages/Dashboard';
 import Batches from './pages/Batches';
 import BatchDetails from './pages/BatchDetails';
@@ -18,6 +21,21 @@ import AuditTrail from './pages/AuditTrail';
 import Analytics from './pages/Analytics';
 import Billing from './pages/Billing';
 
+// Manufacturer pages
+import MfrDashboard from './pages/manufacturer/Dashboard';
+import MfrBatches from './pages/manufacturer/MedicineBatches';
+import MfrAddBatch from './pages/manufacturer/AddBatch';
+import MfrQrGenerator from './pages/manufacturer/QrGenerator';
+import MfrInventoryStock from './pages/manufacturer/InventoryStock';
+import MfrDistribution from './pages/manufacturer/Distribution';
+import MfrScanVerify from './pages/manufacturer/ScanVerify';
+import MfrExpiryAlerts from './pages/manufacturer/ExpiryAlerts';
+import MfrSalesActivity from './pages/manufacturer/SalesActivity';
+import MfrReports from './pages/manufacturer/Reports';
+import MfrNotifications from './pages/manufacturer/Notifications';
+import MfrCompanyProfile from './pages/manufacturer/CompanyProfile';
+import MfrSettings from './pages/manufacturer/Settings';
+
 function App() {
   return (
     <POSProvider>
@@ -27,6 +45,24 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           
+          {/* Manufacturer Routes */}
+          <Route path="/manufacturer" element={<ManufacturerLayout />}>
+            <Route index element={<Navigate to="/manufacturer/dashboard" replace />} />
+            <Route path="dashboard" element={<MfrDashboard />} />
+            <Route path="batches" element={<MfrBatches />} />
+            <Route path="add-batch" element={<MfrAddBatch />} />
+            <Route path="qr-generator" element={<MfrQrGenerator />} />
+            <Route path="inventory" element={<MfrInventoryStock />} />
+            <Route path="distribution" element={<MfrDistribution />} />
+            <Route path="scan-verify" element={<MfrScanVerify />} />
+            <Route path="expiry-alerts" element={<MfrExpiryAlerts />} />
+            <Route path="activity" element={<MfrSalesActivity />} />
+            <Route path="reports" element={<MfrReports />} />
+            <Route path="notifications" element={<MfrNotifications />} />
+            <Route path="profile" element={<MfrCompanyProfile />} />
+            <Route path="settings" element={<MfrSettings />} />
+          </Route>
+
           <Route path="/app" element={<Layout />}>
             <Route index element={<Navigate to="/app/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />

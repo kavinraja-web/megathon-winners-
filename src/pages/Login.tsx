@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, Store, Truck, Trash2, Shield, ArrowRight } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
+  const [selectedRole, setSelectedRole] = useState('manufacturer');
 
   const roles = [
     { id: 'manufacturer', title: 'Manufacturer', desc: 'Brand Owner & Production', icon: Building2 },
@@ -16,11 +17,16 @@ const Login = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    const selectedRole = formData.get('role');
-    if (selectedRole) {
-      localStorage.setItem('USER_ROLE', selectedRole as string);
+    const roleFromForm = formData.get('role') || selectedRole;
+    if (roleFromForm) {
+      localStorage.setItem('USER_ROLE', roleFromForm as string);
     }
-    navigate('/app/dashboard');
+    
+    if (roleFromForm === 'manufacturer') {
+      navigate('/manufacturer/dashboard');
+    } else {
+      navigate('/app/dashboard');
+    }
   };
 
   return (
@@ -40,7 +46,14 @@ const Login = () => {
               <div className="space-y-2">
                 {roles.map((role) => (
                   <label key={role.id} className="relative flex cursor-pointer rounded-xl border border-slate-200 bg-white p-4 shadow-sm focus:outline-none hover:border-emerald-500 has-[:checked]:border-emerald-500 has-[:checked]:ring-1 has-[:checked]:ring-emerald-500 transition-all">
-                    <input type="radio" name="role" value={role.id} className="sr-only" defaultChecked={role.id === 'manufacturer'} />
+                    <input 
+                      type="radio" 
+                      name="role" 
+                      value={role.id} 
+                      className="sr-only" 
+                      checked={selectedRole === role.id}
+                      onChange={(e) => setSelectedRole(e.target.value)} 
+                    />
                     <span className="flex flex-1">
                       <span className="flex flex-col">
                         <span className="flex items-center gap-2 text-sm font-medium text-gray-900">
