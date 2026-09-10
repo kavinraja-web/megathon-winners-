@@ -40,6 +40,41 @@ const DistributorReports = () => {
     item.batchNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleExportCSV = () => {
+    if (filteredReports.length === 0) {
+      alert("No data available to export.");
+      return;
+    }
+
+    const headers = ["Supply ID", "Date", "Medicine Name", "Batch Number", "Destination Pharmacy", "Quantity Supplied", "Status"];
+    
+    const csvRows = [
+      headers.join(','), // Header row
+      ...filteredReports.map(report => 
+        [
+          report.id,
+          report.date,
+          `"${report.medicineName}"`, // Enclose in quotes in case of commas
+          report.batchNumber,
+          `"${report.pharmacy}"`,
+          report.quantitySupplied,
+          report.status
+        ].join(',')
+      )
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Supply_Reports_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -47,7 +82,10 @@ const DistributorReports = () => {
           <h2 className="text-2xl font-bold text-slate-900">Supply Reports</h2>
           <p className="text-slate-500">Track and report all medicines dispatched to pharmacies.</p>
         </div>
-        <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+        <button 
+          onClick={handleExportCSV}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+        >
           <Download size={16} /> Export CSV
         </button>
       </div>
