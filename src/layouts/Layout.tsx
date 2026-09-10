@@ -19,6 +19,7 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
     { name: 'Dashboard', path: `${basePath}/dashboard`, icon: LayoutDashboard },
     { name: 'Medicine Batches', path: `${basePath}/batches`, icon: Package },
     { name: 'QR Scanner', path: `${basePath}/scanner`, icon: QrCode },
+    { name: 'Expiry Alerts', path: `${basePath}/expiry-alerts`, icon: AlertTriangle },
     { name: 'Return Requests', path: `${basePath}/returns`, icon: RefreshCw },
     { name: 'Reverse Logistics', path: `${basePath}/logistics`, icon: Truck },
     { name: 'Audit Trail', path: `${basePath}/audit`, icon: History },
@@ -28,10 +29,10 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
 
   const filteredNavItems = navItems.filter(item => {
     if (userRole === 'pharmacy') {
-      return ['Dashboard', 'QR Scanner', 'Billing POS', 'Medicine Batches', 'Return Requests'].includes(item.name);
+      return ['Dashboard', 'QR Scanner', 'Billing POS', 'Medicine Batches', 'Return Requests', 'Expiry Alerts', 'Analytics'].includes(item.name);
     }
     if (userRole === 'distributor') {
-      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Reverse Logistics'].includes(item.name);
+      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Reverse Logistics', 'Expiry Alerts'].includes(item.name);
     }
     return true;
   });
