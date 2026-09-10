@@ -284,6 +284,10 @@ const Scanner = () => {
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Expiry Date</p>
                   <p className="font-medium text-slate-900 text-lg">{parsedData['EXPIRY DATE'] || 'N/A'}</p>
                 </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">MRP</p>
+                  <p className="font-medium text-slate-900 text-lg">{parsedData['MRP'] ? `₹${parsedData['MRP']}` : 'N/A'}</p>
+                </div>
               </div>
               
               <div className="mt-6 pt-4 border-t border-slate-100">

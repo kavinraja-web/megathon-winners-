@@ -73,8 +73,9 @@ const Billing = () => {
 
   const handleBarcodeLookup = (barcode: string) => {
     const parsedQr = parseQRCode(barcode);
-    const searchCode = parsedQr ? (parsedQr['TABLET_NO'] || barcode) : barcode;
-    const product = findProductByBarcode(searchCode);
+    // Support both sets of keys
+    const tabletNo = parsedQr ? (parsedQr['TABLET_NO'] || parsedQr['TABLET NUMBER'] || barcode) : barcode;
+    const product = findProductByBarcode(tabletNo);
     
     if (product) {
       setScannedProduct(product);
@@ -82,7 +83,25 @@ const Billing = () => {
       setUnrecognizedQrData(null);
     } else {
       if (parsedQr) {
-        setUnrecognizedQrData(parsedQr);
+        // Map the keys so that the UI can find them
+        const normalizedQr = {
+          MEDICINE: parsedQr['MEDICINE'] || '',
+          TABLET_NO: parsedQr['TABLET_NO'] || parsedQr['TABLET NUMBER'] || '',
+          BATCH_NO: parsedQr['BATCH_NO'] || parsedQr['BATCH NUMBER'] || '',
+          MFG_DATE: parsedQr['MFG_DATE'] || parsedQr['MANUFACTURED DATE'] || '',
+          EXP_DATE: parsedQr['EXP_DATE'] || parsedQr['EXPIRY DATE'] || '',
+          MRP: parsedQr['MRP'] || ''
+        };
+        
+        setUnrecognizedQrData(normalizedQr);
+        
+        if (normalizedQr.MRP) {
+          const mrpVal = parseFloat(normalizedQr.MRP);
+          if (!isNaN(mrpVal)) {
+            setAddMrp(mrpVal);
+            setAddSellingPrice(mrpVal); // default selling price to MRP or any logic
+          }
+        }
       } else {
         setUnrecognizedQrData(null);
       }

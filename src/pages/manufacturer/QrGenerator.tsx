@@ -49,7 +49,8 @@ const QrGenerator = () => {
 TABLET NUMBER: ${batch.tabletId}
 BATCH NUMBER: ${batch.batchNumber}
 MANUFACTURED DATE: ${batch.mfgDate}
-EXPIRY DATE: ${batch.expDate}`.trim();
+EXPIRY DATE: ${batch.expDate}
+MRP: ${batch.mrp || 0}`.trim();
   };
 
   return (
