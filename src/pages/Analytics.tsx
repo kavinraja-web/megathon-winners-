@@ -17,7 +17,7 @@ const downloadReport = (content: string, filename: string) => {
 const Analytics = () => {
   const { products, batches, bills } = usePOS();
   
-  const [apiKey, setApiKey] = useState(import.meta.env.VITE_GEMINI_API_KEY || '');
+  const [apiKey, setApiKey] = useState(import.meta.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [reportData, setReportData] = useState<string | null>(null);
 

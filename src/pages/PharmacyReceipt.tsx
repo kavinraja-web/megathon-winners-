@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { Upload, Camera, FileText, CheckCircle, Loader2, Plus, RefreshCw, Save } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
-const genAI = new GoogleGenerativeAI(API_KEY);
-
 interface ExtractedRecord {
   serialNumber: string;
   medicineNumber: string;
@@ -13,6 +10,7 @@ interface ExtractedRecord {
 }
 
 const PharmacyReceipt = () => {
+  const [apiKey, setApiKey] = useState(import.meta.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '');
   const [image, setImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [records, setRecords] = useState<ExtractedRecord[]>([]);
@@ -33,8 +31,8 @@ const PharmacyReceipt = () => {
 
   const processReceipt = async () => {
     if (!image) return;
-    if (!API_KEY) {
-      setError('Please add your VITE_GEMINI_API_KEY to the .env file to use the AI extraction feature.');
+    if (!apiKey) {
+      setError('Please enter your Gemini API Key below to use the AI extraction feature.');
       return;
     }
 
@@ -42,6 +40,7 @@ const PharmacyReceipt = () => {
     setError(null);
 
     try {
+      const genAI = new GoogleGenerativeAI(apiKey);
       const base64Data = image.split(',')[1];
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
@@ -162,6 +161,18 @@ const PharmacyReceipt = () => {
                 {error}
               </div>
             )}
+            
+            <div className="mt-6 pt-6 border-t border-slate-100">
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Gemini API Key</label>
+              <input 
+                type="password"
+                placeholder="AIzaSy..."
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm"
+              />
+              <p className="text-xs text-slate-500 mt-2">Required for AI extraction. Kept local to your browser.</p>
+            </div>
           </div>
         </div>
 

@@ -121,8 +121,8 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
       toast.error(`🚨 RE-ENTRY FRAUD DETECTED\nBatch: ${batch.batchNumber}\nThis batch was previously recorded as destroyed and must not re-enter the pharmaceutical supply chain.`, { duration: 6000 });
       return false;
     }
-    if (batch.status === 'EXPIRED') {
-      toast.error('⚠️ This medicine batch has expired and cannot be sold.');
+    if (batch.status === 'EXPIRED' || batch.status === 'RETURN_REQUESTED') {
+      toast.error('⚠️ This medicine batch has expired or was automatically returned and cannot be sold.');
       return false;
     }
     if (batch.quantity === 0) {
@@ -275,6 +275,14 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
       saveProducts(updatedProducts);
     }
 
+    let initialStatus = calculateExpiryStatus(batchData.expiryDate || new Date().toISOString());
+    let autoReturned = false;
+    
+    if (initialStatus === 'EXPIRED') {
+      initialStatus = 'RETURN_REQUESTED';
+      autoReturned = true;
+    }
+
     const batch: BatchRecord = {
       id: `B${String(Date.now()).slice(-4)}`,
       productId: product.id,
@@ -286,14 +294,30 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
       purchasePrice: batchData.purchasePrice || 0,
       sellingPrice: batchData.sellingPrice || 0,
       supplier: batchData.supplier || 'Direct',
-      status: calculateExpiryStatus(batchData.expiryDate || new Date().toISOString())
+      status: initialStatus
     };
 
     const newBatches = [...batches, batch];
     setBatches(newBatches);
     saveBatches(newBatches);
+
+    if (autoReturned) {
+      const newRecord: ReverseChainRecord = {
+        id: `RC${String(Date.now()).slice(-4)}-AUTO`,
+        batchId: batch.id,
+        batchNumber: batch.batchNumber,
+        product: product.name,
+        quantity: batch.quantity,
+        pharmacy: 'PharmaX Demo Pharmacy',
+        status: 'RETURN_REQUESTED'
+      };
+      const reverseChain = getReverseChain();
+      saveReverseChain([...reverseChain, newRecord]);
+      toast.error('Product is already expired! Automatic return message sent to distributor.', { duration: 6000 });
+    } else {
+      toast.success('Product and Batch added to inventory successfully');
+    }
     
-    toast.success('Product and Batch added to inventory successfully');
     return { product, batch };
   };
 
