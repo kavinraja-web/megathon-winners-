@@ -20,20 +20,21 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
     { name: 'Dashboard', path: `${basePath}/dashboard`, icon: LayoutDashboard },
     { name: 'Medicine Batches', path: `${basePath}/batches`, icon: Package },
     { name: 'QR Scanner', path: `${basePath}/scanner`, icon: QrCode },
+    { name: 'Expiry Alerts', path: `${basePath}/expiry`, icon: AlertTriangle },
     { name: 'Return Requests', path: `${basePath}/returns`, icon: RefreshCw },
     { name: 'Reverse Logistics', path: `${basePath}/logistics`, icon: Truck },
     { name: 'Supply Reports', path: `${basePath}/reports`, icon: FileText },
     { name: 'Audit Trail', path: `${basePath}/audit`, icon: History },
     { name: 'Billing POS', path: `${basePath}/billing`, icon: FileText },
-    { name: 'Analytics', path: `${basePath}/analytics`, icon: BarChart3 },
+    { name: 'Reports', path: `${basePath}/reports`, icon: BarChart3 },
   ];
 
   const filteredNavItems = navItems.filter(item => {
     if (userRole === 'pharmacy') {
-      return ['Dashboard', 'QR Scanner', 'Billing POS', 'Medicine Batches', 'Return Requests'].includes(item.name);
+      return ['Dashboard', 'QR Scanner', 'Billing POS', 'Medicine Batches', 'Return Requests', 'Expiry Alerts', 'Reports'].includes(item.name);
     }
     if (userRole === 'distributor') {
-      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Supply Reports', 'Reverse Logistics'].includes(item.name);
+      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Supply Reports', 'Reverse Logistics', 'Expiry Alerts'].includes(item.name);
     }
     return true;
   });
@@ -106,6 +107,9 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
 };
 
 const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
+  const { profile } = useAuth();
+  const basePath = `/${profile?.role || 'pharmacy'}`;
+  
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10 w-full">
       <div className="flex items-center gap-2 w-full md:w-auto">
@@ -145,10 +149,10 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-sm font-medium text-slate-600">System Online</span>
         </div>
-        <button className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors">
+        <Link to={`${basePath}/notifications`} className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors">
           <Bell size={20} />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-        </button>
+        </Link>
       </div>
     </header>
   );

@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { Upload, Camera, FileText, CheckCircle, Loader2, Plus, RefreshCw, Save } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
-const genAI = new GoogleGenerativeAI(API_KEY);
-
 interface ExtractedRecord {
   serialNumber: string;
   medicineNumber: string;
@@ -13,6 +10,7 @@ interface ExtractedRecord {
 }
 
 const PharmacyReceipt = () => {
+  const [apiKey, setApiKey] = useState(import.meta.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '');
   const [image, setImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [records, setRecords] = useState<ExtractedRecord[]>([]);
@@ -33,8 +31,8 @@ const PharmacyReceipt = () => {
 
   const processReceipt = async () => {
     if (!image) return;
-    if (!API_KEY) {
-      setError('Please add your VITE_GEMINI_API_KEY to the .env file to use the AI extraction feature.');
+    if (!apiKey) {
+      setError('Please enter your Gemini API Key below to use the AI extraction feature.');
       return;
     }
 
@@ -42,6 +40,7 @@ const PharmacyReceipt = () => {
     setError(null);
 
     try {
+      const genAI = new GoogleGenerativeAI(apiKey);
       const base64Data = image.split(',')[1];
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
@@ -157,11 +156,6 @@ const PharmacyReceipt = () => {
               </div>
             )}
             
-            {error && (
-              <div className="mt-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100">
-                {error}
-              </div>
-            )}
           </div>
         </div>
 
@@ -214,6 +208,12 @@ const PharmacyReceipt = () => {
                 <button className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
                   <Plus size={14} /> Add Row Manually
                 </button>
+              </div>
+            )}
+            
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100">
+                {error}
               </div>
             )}
           </div>

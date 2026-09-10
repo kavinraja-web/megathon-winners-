@@ -1,6 +1,19 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const Notifications = () => {
+  const { profile } = useAuth();
+  const [dynamicNotifs, setDynamicNotifs] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (profile?.id) {
+      const shortId = profile.id.substring(0, 8).toLowerCase();
+      const notifsKey = `sys_notifications_${shortId}`;
+      const saved = JSON.parse(localStorage.getItem(notifsKey) || '[]');
+      setDynamicNotifs(saved);
+    }
+  }, [profile]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -9,6 +22,11 @@ const Notifications = () => {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        {dynamicNotifs.map((n, i) => (
+          <div key={i} className={`p-4 bg-${n.type}-50 border border-${n.type}-200 text-${n.type}-800 rounded-lg mb-4`}>
+            {n.text}
+          </div>
+        ))}
         <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg mb-4">
           12 batches are nearing expiry.
         </div>

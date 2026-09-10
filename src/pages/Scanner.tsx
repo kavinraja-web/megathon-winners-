@@ -100,6 +100,27 @@ const Scanner = () => {
         
         if (!isNaN(expDateObj.getTime()) && expDateObj < new Date()) {
           setScanState('expired');
+          
+          // Actually push to reverse chain to simulate the automated system action
+          try {
+            const currentChainStr = localStorage.getItem('PHARMAX_REVERSE_CHAIN') || '[]';
+            const reverseChain = JSON.parse(currentChainStr);
+            const exists = reverseChain.find((r: any) => r.batchNumber === batchNo);
+            if (!exists) {
+              reverseChain.push({
+                id: `RC${String(Date.now()).slice(-4)}-AUTO-SCAN`,
+                batchId: `B-AUTO-${batchNo}`,
+                batchNumber: batchNo,
+                product: parsed['MEDICINE'] || 'Unknown Product',
+                quantity: 1, // Placeholder
+                pharmacy: 'PharmaX Demo Pharmacy',
+                status: 'RETURN_REQUESTED'
+              });
+              localStorage.setItem('PHARMAX_REVERSE_CHAIN', JSON.stringify(reverseChain));
+            }
+          } catch (e) {
+            console.error('Could not auto-return:', e);
+          }
           return;
         }
       }
@@ -333,22 +354,25 @@ const Scanner = () => {
               )}
               
               {scanState === 'expired' && (
-                <div className="flex items-center gap-3 text-red-800 bg-red-50 p-4 rounded-xl border border-red-200 mt-4">
+                <div className="flex flex-col gap-2 mt-4">
+                  <div className="flex items-center gap-3 text-red-800 bg-red-50 p-4 rounded-xl border border-red-200">
+                    <XCircle size={32} className="shrink-0" />
+                    <div>
+                      <p className="font-bold text-lg">🔴 EXPIRED MEDICINE</p>
+                      <p className="font-bold">🚫 SALE BLOCKED</p>
+                      <p className="text-sm">This medicine has passed its expiry date and must not be sold.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 text-orange-800 bg-orange-50 p-4 rounded-xl border border-orange-200">
+                    <AlertTriangle size={24} className="shrink-0" />
+                    <div>
+                      <p className="font-bold">AUTOMATIC RETURN INITIATED</p>
+                      <p className="text-sm">A return message for this expired batch has been sent automatically to the distributor.</p>
+                <div className="flex items-center gap-3 text-red-800 bg-red-50 p-4 rounded-xl border border-red-200 mt-6">
                   <XCircle size={32} className="shrink-0" />
                   <div>
-                    <p className="font-bold text-lg">🔴 EXPIRED MEDICINE</p>
-                    <p className="font-bold">🚫 SALE BLOCKED</p>
-                    <p className="text-sm">This medicine has passed its expiry date and must not be sold.</p>
-                  </div>
-                </div>
-              )}
-              
-              {scanState === 'success' && !mismatch && systemBatch && (
-                <div className="flex items-center gap-3 text-emerald-800 bg-emerald-50 p-4 rounded-xl border border-emerald-200 mt-4">
-                  <CheckCircle size={32} className="shrink-0" />
-                  <div>
-                    <p className="font-bold text-lg">🟢 MEDICINE VALID</p>
-                    <p className="text-sm">Ready for pharmacy workflow.</p>
+                    <p className="font-bold text-lg">MEDICINE IS EXPIRED!</p>
+                    <p className="text-sm">A notification has been sent to the manufacturer automatically.</p>
                   </div>
                 </div>
               )}

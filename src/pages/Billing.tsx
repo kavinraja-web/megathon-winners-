@@ -260,9 +260,9 @@ const Billing = () => {
                     <div className="flex items-center justify-between mt-4">
                       <span className="text-sm font-medium text-slate-600">Stock: {batch.quantity}</span>
                       
-                      {batch.status === 'EXPIRED' ? (
-                        <button className="text-red-600 font-medium text-sm hover:underline flex items-center gap-1">
-                          <AlertTriangle size={14} /> Start Return / Disposal
+                      {batch.status === 'EXPIRED' || batch.status === 'RETURN_REQUESTED' ? (
+                        <button disabled className="bg-orange-100 text-orange-700 px-4 py-1.5 rounded-lg text-sm font-bold cursor-not-allowed flex items-center gap-1">
+                          <AlertTriangle size={14} /> AUTO-RETURNED TO DISTRIBUTOR
                         </button>
                       ) : batch.status === 'PERMANENTLY_CLOSED' ? (
                         <button disabled className="bg-slate-200 text-slate-500 px-4 py-1.5 rounded-lg text-sm font-bold cursor-not-allowed flex items-center gap-1">

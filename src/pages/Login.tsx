@@ -11,7 +11,7 @@ const Login = () => {
   const { session, profile } = useAuth();
   
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('last_login_email') || '');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [organization, setOrganization] = useState('');
@@ -36,6 +36,7 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    localStorage.setItem('last_login_email', email);
 
     try {
       if (isLogin) {
