@@ -22,6 +22,7 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
     { name: 'QR Scanner', path: `${basePath}/scanner`, icon: QrCode },
     { name: 'Return Requests', path: `${basePath}/returns`, icon: RefreshCw },
     { name: 'Reverse Logistics', path: `${basePath}/logistics`, icon: Truck },
+    { name: 'Supply Reports', path: `${basePath}/reports`, icon: FileText },
     { name: 'Audit Trail', path: `${basePath}/audit`, icon: History },
     { name: 'Billing POS', path: `${basePath}/billing`, icon: FileText },
     { name: 'Analytics', path: `${basePath}/analytics`, icon: BarChart3 },
@@ -32,7 +33,7 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
       return ['Dashboard', 'QR Scanner', 'Billing POS', 'Medicine Batches', 'Return Requests'].includes(item.name);
     }
     if (userRole === 'distributor') {
-      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Reverse Logistics'].includes(item.name);
+      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Supply Reports', 'Reverse Logistics'].includes(item.name);
     }
     return true;
   });

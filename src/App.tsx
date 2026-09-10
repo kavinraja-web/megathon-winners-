@@ -39,6 +39,8 @@ import MfrNotifications from './pages/manufacturer/Notifications';
 import MfrCompanyProfile from './pages/manufacturer/CompanyProfile';
 import MfrSettings from './pages/manufacturer/Settings';
 
+import DistributorReports from './pages/distributor/DistributorReports';
+
 function App() {
   return (
     <AuthProvider>
@@ -81,6 +83,7 @@ function App() {
                 <Route path="expiry" element={<ExpiryAlerts />} />
                 <Route path="returns" element={<Returns />} />
                 <Route path="logistics" element={<Logistics />} />
+                <Route path="reports" element={<DistributorReports />} />
                 <Route path="analytics" element={<Analytics />} />
               </Route>
             </Route>
