@@ -358,9 +358,9 @@ const Scanner = () => {
                   <div className="flex items-center gap-3 text-red-800 bg-red-50 p-4 rounded-xl border border-red-200">
                     <XCircle size={32} className="shrink-0" />
                     <div>
-                      <p className="font-bold text-lg">🔴 EXPIRED MEDICINE</p>
-                      <p className="font-bold">🚫 SALE BLOCKED</p>
-                      <p className="text-sm">This medicine has passed its expiry date and must not be sold.</p>
+                      <p className="font-bold text-lg">EXPIRED MEDICINE</p>
+                      <p className="font-bold">SALE BLOCKED</p>
+                      <p className="text-sm">This medicine has passed its expiry date and must not be sold. A notification has been sent to the manufacturer automatically.</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-orange-800 bg-orange-50 p-4 rounded-xl border border-orange-200">
@@ -368,11 +368,7 @@ const Scanner = () => {
                     <div>
                       <p className="font-bold">AUTOMATIC RETURN INITIATED</p>
                       <p className="text-sm">A return message for this expired batch has been sent automatically to the distributor.</p>
-                <div className="flex items-center gap-3 text-red-800 bg-red-50 p-4 rounded-xl border border-red-200 mt-6">
-                  <XCircle size={32} className="shrink-0" />
-                  <div>
-                    <p className="font-bold text-lg">MEDICINE IS EXPIRED!</p>
-                    <p className="text-sm">A notification has been sent to the manufacturer automatically.</p>
+                    </div>
                   </div>
                 </div>
               )}
