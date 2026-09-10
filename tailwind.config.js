@@ -7,21 +7,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        forest: {
-          50: '#f2f8f4',
-          100: '#e1efe4',
-          500: '#2d6a4f',
-          600: '#23533e',
-          700: '#1a3d2e',
-          900: '#0d2218'
+        pharmaBlue: {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          900: '#1e3a8a'
         },
-        fresh: {
-          500: '#40916c',
-          600: '#327355',
+        pharmaGreen: {
+          500: '#10b981',
+          600: '#059669',
         },
-        earth: {
-          100: '#fdfbf7',
-          200: '#f4ede4',
+        pharmaNeutral: {
+          100: '#f8fafc',
+          200: '#f1f5f9',
         }
       },
       fontFamily: {
