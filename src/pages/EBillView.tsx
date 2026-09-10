@@ -22,22 +22,8 @@ const EBillView = () => {
     }
   }, [searchParams]);
 
-  const downloadPDF = async () => {
-    if (!invoiceRef.current || !billData) return;
-    
-    // Dynamically import html2pdf
-    const html2pdf = (await import('html2pdf.js')).default;
-    
-    const element = invoiceRef.current;
-    const opt = {
-      margin: 1,
-      filename: `PharmaTrace_E-Bill_${billData.id}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().set(opt).from(element).save();
+  const downloadPDF = () => {
+    window.print();
   };
 
   if (error) {
@@ -57,23 +43,47 @@ const EBillView = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 py-8 md:py-12 flex flex-col items-center">
-      <div className="w-full max-w-2xl flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-          <CheckCircle className="text-emerald-500" /> Digital E-Bill Verified
-        </h1>
-        <button 
-          onClick={downloadPDF}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2"
-        >
-          <Download size={18} /> Save as PDF
-        </button>
-      </div>
+    <>
+      <style>
+        {`
+          @media print {
+            body * {
+              visibility: hidden;
+            }
+            .print-area, .print-area * {
+              visibility: visible;
+            }
+            .print-area {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100%;
+              box-shadow: none !important;
+              border: none !important;
+            }
+            .no-print {
+              display: none !important;
+            }
+          }
+        `}
+      </style>
+      <div className="min-h-screen bg-slate-100 p-4 py-8 md:py-12 flex flex-col items-center">
+        <div className="w-full max-w-2xl flex justify-between items-center mb-6 no-print">
+          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <CheckCircle className="text-emerald-500" /> Digital E-Bill Verified
+          </h1>
+          <button 
+            onClick={downloadPDF}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2"
+          >
+            <Download size={18} /> Save as PDF
+          </button>
+        </div>
 
-      <div 
-        ref={invoiceRef}
-        className="w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-lg border border-slate-200"
-      >
+        <div 
+          ref={invoiceRef}
+          className="print-area w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-lg border border-slate-200"
+        >
         {/* Invoice Header */}
         <div className="flex justify-between items-start border-b border-slate-200 pb-8 mb-8">
           <div>
@@ -159,7 +169,7 @@ const EBillView = () => {
           </p>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
