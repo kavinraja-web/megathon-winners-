@@ -6,6 +6,7 @@ import {
   Activity, BarChart3, Bell, Building2, Settings, User, LogOut, Search, FileText, Users, Menu, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ExpiryNotificationBanner from '../components/ExpiryNotificationBanner';
 
 const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: boolean) => void }) => {
   const location = useLocation();
@@ -137,7 +138,8 @@ const ManufacturerLayout = () => {
         />
       )}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-      <div className="md:ml-64 flex-1 flex flex-col w-full min-w-0">
+      <div className="md:ml-64 flex-1 flex flex-col relative w-full min-w-0">
+        <ExpiryNotificationBanner />
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
           <Outlet />
