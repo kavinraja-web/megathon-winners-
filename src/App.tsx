@@ -14,6 +14,7 @@ import Destruction from './pages/Destruction';
 import FraudDetection from './pages/FraudDetection';
 import AuditTrail from './pages/AuditTrail';
 import Analytics from './pages/Analytics';
+import PharmacyReceipt from './pages/PharmacyReceipt';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="batches" element={<Batches />} />
           <Route path="batches/:id" element={<BatchDetails />} />
           <Route path="scanner" element={<Scanner />} />
+          <Route path="receipt-scanner" element={<PharmacyReceipt />} />
           <Route path="expiry" element={<ExpiryAlerts />} />
           <Route path="returns" element={<Returns />} />
           <Route path="logistics" element={<Logistics />} />

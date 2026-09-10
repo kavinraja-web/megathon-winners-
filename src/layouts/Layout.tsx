@@ -13,6 +13,7 @@ const Sidebar = () => {
     { name: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard },
     { name: 'Medicine Batches', path: '/app/batches', icon: Package },
     { name: 'QR Scanner', path: '/app/scanner', icon: QrCode },
+    { name: 'Pharmacy Receipt', path: '/app/receipt-scanner', icon: FileText },
     { name: 'Expiry Alerts', path: '/app/expiry', icon: AlertTriangle },
     { name: 'Return Requests', path: '/app/returns', icon: RefreshCw },
     { name: 'Reverse Logistics', path: '/app/logistics', icon: Truck },
