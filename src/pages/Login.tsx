@@ -15,6 +15,11 @@ const Login = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const selectedRole = formData.get('role');
+    if (selectedRole) {
+      localStorage.setItem('USER_ROLE', selectedRole as string);
+    }
     navigate('/app/dashboard');
   };
 
