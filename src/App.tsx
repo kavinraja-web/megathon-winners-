@@ -42,6 +42,9 @@ import MfrNotifications from './pages/manufacturer/Notifications';
 import MfrCompanyProfile from './pages/manufacturer/CompanyProfile';
 import MfrSettings from './pages/manufacturer/Settings';
 
+import EBillView from './pages/EBillView';
+import DistributorReports from './pages/distributor/DistributorReports';
+
 function App() {
   return (
     <AuthProvider>
@@ -51,6 +54,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/e-bill" element={<EBillView />} />
             
             {/* Manufacturer Routes */}
             <Route path="/manufacturer" element={<ProtectedRoute allowedRoles={['manufacturer']} />}>
@@ -87,9 +91,9 @@ function App() {
                 <Route path="returns" element={<ReturnTracking />} />
                 <Route path="create-return" element={<CreateReturn />} />
                 <Route path="logistics" element={<Logistics />} />
+                <Route path="reports" element={<DistributorReports />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="notifications" element={<Notifications />} />
-
               </Route>
             </Route>
 
@@ -106,7 +110,7 @@ function App() {
                 <Route path="create-return" element={<CreateReturn />} />
                 <Route path="logistics" element={<Logistics />} />
                 <Route path="billing" element={<Billing />} />
-                <Route path="analytics" element={<Analytics />} />
+                <Route path="reports" element={<Analytics />} />
                 <Route path="notifications" element={<Notifications />} />
 
               </Route>

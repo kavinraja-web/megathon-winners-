@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, CheckCircle, Clock, Package } from 'lucide-react';
+import { Package } from 'lucide-react';
 import { getReverseChain, ReverseChainRecord } from '../data/db';
 
 const Returns = () => {

@@ -6,6 +6,7 @@ import {
   History, BarChart3, Bell, Search, User, LogOut, Menu, X 
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ExpiryNotificationBanner from '../components/ExpiryNotificationBanner';
 
 const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: boolean) => void }) => {
   const location = useLocation();
@@ -19,19 +20,21 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
     { name: 'Dashboard', path: `${basePath}/dashboard`, icon: LayoutDashboard },
     { name: 'Medicine Batches', path: `${basePath}/batches`, icon: Package },
     { name: 'QR Scanner', path: `${basePath}/scanner`, icon: QrCode },
+    { name: 'Expiry Alerts', path: `${basePath}/expiry`, icon: AlertTriangle },
     { name: 'Return Requests', path: `${basePath}/returns`, icon: RefreshCw },
     { name: 'Reverse Logistics', path: `${basePath}/logistics`, icon: Truck },
+    { name: 'Supply Reports', path: `${basePath}/reports`, icon: FileText },
     { name: 'Audit Trail', path: `${basePath}/audit`, icon: History },
     { name: 'Billing POS', path: `${basePath}/billing`, icon: FileText },
-    { name: 'Analytics', path: `${basePath}/analytics`, icon: BarChart3 },
+    { name: 'Reports', path: `${basePath}/reports`, icon: BarChart3 },
   ];
 
   const filteredNavItems = navItems.filter(item => {
     if (userRole === 'pharmacy') {
-      return ['Dashboard', 'QR Scanner', 'Billing POS', 'Medicine Batches', 'Return Requests'].includes(item.name);
+      return ['Dashboard', 'QR Scanner', 'Billing POS', 'Medicine Batches', 'Return Requests', 'Expiry Alerts', 'Reports'].includes(item.name);
     }
     if (userRole === 'distributor') {
-      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Reverse Logistics'].includes(item.name);
+      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Supply Reports', 'Reverse Logistics', 'Expiry Alerts'].includes(item.name);
     }
     return true;
   });
@@ -167,7 +170,8 @@ const Layout = () => {
         />
       )}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-      <div className="md:ml-64 flex-1 flex flex-col w-full min-w-0">
+      <div className="md:ml-64 flex-1 flex flex-col relative w-full min-w-0">
+        <ExpiryNotificationBanner />
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
           <Outlet />

@@ -1,8 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { usePOS } from '../context/POSContext';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Download, Sparkles, FileText, Loader2, Key } from 'lucide-react';
+import { Download, Sparkles, FileText, Loader2, Key, TrendingUp, Package, AlertTriangle, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { mockBatches } from '../data/mockData';
+
+const mockSalesData = [
+  { date: 'Mon', sales: 4000, qty: 240 },
+  { date: 'Tue', sales: 3000, qty: 139 },
+  { date: 'Wed', sales: 2000, qty: 980 },
+  { date: 'Thu', sales: 2780, qty: 390 },
+  { date: 'Fri', sales: 1890, qty: 480 },
+  { date: 'Sat', sales: 2390, qty: 380 },
+  { date: 'Sun', sales: 3490, qty: 430 },
+];
 
 const downloadReport = (content: string, filename: string) => {
   const element = document.createElement("a");
@@ -25,9 +37,32 @@ const Analytics = () => {
   const calculateTotalStock = () => batches.reduce((acc, batch) => acc + batch.quantity, 0);
   const calculateExpiringSoon = () => batches.filter(b => b.status === 'NEAR_EXPIRY' || b.status === 'CRITICAL').length;
 
+  const { totalStock, expiredCount, expiredBatches, totalBatches } = useMemo(() => {
+    let stock = 0;
+    let expired = 0;
+    const expiredList = [];
+    
+    for (const batch of mockBatches) {
+      stock += batch.quantity;
+      const isExpired = new Date(batch.expDate) < new Date() || batch.status === 'Expired';
+      if (isExpired) {
+        expired += 1;
+        expiredList.push(batch);
+      }
+    }
+    
+    return { 
+      totalStock: stock, 
+      expiredCount: expired, 
+      expiredBatches: expiredList,
+      totalBatches: mockBatches.length
+    };
+  }, [mockBatches]);
+
+
   const generateAIReport = async () => {
     if (!apiKey) {
-      toast.error("Please enter a Gemini API Key to generate the AI report.");
+      toast.error("Gemini API Key is missing from environment variables.");
       return;
     }
 
@@ -80,15 +115,15 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Analytics & AI Reports</h2>
-          <p className="text-slate-500 text-sm">Generate AI-powered insights for sales, stock, and expiring medicines.</p>
+          <h2 className="text-2xl font-bold text-slate-900">Reports</h2>
+          <p className="text-slate-500 text-sm">Generate comprehensive reports for sales, stock, and expiring medicines.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
           <div className="p-4 rounded-xl bg-blue-50 text-blue-600">
-            <FileText size={24} />
+            <IndianRupee size={24} />
           </div>
           <div>
             <p className="text-sm font-medium text-slate-500">Total Revenue</p>
@@ -97,7 +132,7 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
           <div className="p-4 rounded-xl bg-emerald-50 text-emerald-600">
-            <FileText size={24} />
+            <Package size={24} />
           </div>
           <div>
             <p className="text-sm font-medium text-slate-500">Total Stock Items</p>
@@ -106,11 +141,57 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
           <div className="p-4 rounded-xl bg-orange-50 text-orange-600">
-            <FileText size={24} />
+            <AlertTriangle size={24} />
           </div>
           <div>
             <p className="text-sm font-medium text-slate-500">Expiring Soon</p>
             <p className="text-2xl font-bold text-slate-900">{calculateExpiringSoon()} batches</p>
+          </div>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-red-200 shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center">
+            <AlertTriangle size={24} />
+          </div>
+          <div>
+            <p className="text-sm text-slate-500 font-medium">Expired Batches (Mock)</p>
+            <p className="text-2xl font-bold text-red-600">{expiredCount}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="text-lg font-bold text-slate-900 mb-6">Revenue & Sales Trends</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={mockSalesData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Line type="monotone" dataKey="sales" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981' }} activeDot={{ r: 6 }} name="Revenue (₹)" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 className="text-lg font-bold text-slate-900 mb-6">Units Sold by Day</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={mockSalesData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  cursor={{ fill: '#f1f5f9' }}
+                />
+                <Bar dataKey="qty" fill="#6366f1" radius={[4, 4, 0, 0]} name="Units Sold" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
@@ -127,21 +208,6 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
           </div>
 
           <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Gemini API Key</label>
-              <div className="relative">
-                <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="password"
-                  placeholder="AIzaSy..."
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
-                />
-              </div>
-              <p className="text-xs text-slate-500 mt-2">Required to use AI features. Key is used locally and not saved on any external servers.</p>
-            </div>
-
             <button
               onClick={generateAIReport}
               disabled={isGenerating || !apiKey}
@@ -188,10 +254,49 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-4 py-20 text-center px-8">
                 <FileText size={48} className="text-slate-200" />
-                <p>No report generated yet.<br/>Enter your API key and click "Generate AI Report" to get started.</p>
+                <p>No report generated yet.<br/>Click "Generate AI Report" to get started.</p>
               </div>
             )}
           </div>
+        </div>
+      </div>
+      
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mt-6">
+        <div className="p-6 border-b border-slate-200">
+          <h3 className="text-lg font-bold text-slate-900">Expired Medicines Attention Required (Mock Data)</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Batch ID</th>
+                <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Medicine</th>
+                <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Expiry Date</th>
+                <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Quantity Left</th>
+                <th className="p-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {expiredBatches.map((batch) => (
+                <tr key={batch.id} className="hover:bg-slate-50">
+                  <td className="p-4 text-sm font-medium text-slate-900">{batch.id}</td>
+                  <td className="p-4 text-sm text-slate-600">{batch.name}</td>
+                  <td className="p-4 text-sm font-medium text-red-600">{batch.expDate}</td>
+                  <td className="p-4 text-sm text-slate-600">{batch.quantity}</td>
+                  <td className="p-4">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+                      {batch.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {expiredBatches.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-slate-500">No expired batches found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

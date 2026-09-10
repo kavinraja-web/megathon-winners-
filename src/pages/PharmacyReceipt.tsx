@@ -32,7 +32,7 @@ const PharmacyReceipt = () => {
   const processReceipt = async () => {
     if (!image) return;
     if (!apiKey) {
-      setError('Please enter your Gemini API Key below to use the AI extraction feature.');
+      setError('Gemini API Key is missing from environment variables.');
       return;
     }
 
@@ -156,23 +156,6 @@ const PharmacyReceipt = () => {
               </div>
             )}
             
-            {error && (
-              <div className="mt-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100">
-                {error}
-              </div>
-            )}
-            
-            <div className="mt-6 pt-6 border-t border-slate-100">
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Gemini API Key</label>
-              <input 
-                type="password"
-                placeholder="AIzaSy..."
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm"
-              />
-              <p className="text-xs text-slate-500 mt-2">Required for AI extraction. Kept local to your browser.</p>
-            </div>
           </div>
         </div>
 
@@ -225,6 +208,12 @@ const PharmacyReceipt = () => {
                 <button className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
                   <Plus size={14} /> Add Row Manually
                 </button>
+              </div>
+            )}
+            
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-100">
+                {error}
               </div>
             )}
           </div>
