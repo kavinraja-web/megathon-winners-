@@ -5,7 +5,9 @@ import {
   Layers, Truck, ScanLine, AlertTriangle, 
   Activity, BarChart3, Bell, Building2, Settings, User, LogOut, Search
 } from 'lucide-react';
+import ExpiryNotificationBanner from '../components/ExpiryNotificationBanner';
 
+// ... (keep sidebar and navbar components identical)
 const Sidebar = () => {
   const location = useLocation();
   
@@ -109,7 +111,8 @@ const ManufacturerLayout = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <Sidebar />
-      <div className="ml-64 flex-1 flex flex-col">
+      <div className="ml-64 flex-1 flex flex-col relative">
+        <ExpiryNotificationBanner />
         <Navbar />
         <main className="flex-1 p-8 overflow-y-auto">
           <Outlet />
