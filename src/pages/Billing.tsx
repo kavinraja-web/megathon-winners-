@@ -1,52 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import { usePOS } from '../context/POSContext';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { Search, Plus, Minus, Trash2, Camera, Receipt, AlertOctagon, CheckCircle2, AlertTriangle, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { BatchRecord, Product } from '../data/db';
 
 const Billing = () => {
-  const { currentBill, updateQuantity, removeFromBill, generateBill, batches, products, addToBill, findProductByBarcode, getBatchesForProduct } = usePOS();
+  const { currentBill, updateQuantity, removeFromBill, generateBill, batches, products, addToBill, findProductByBarcode, getBatchesForProduct, addInventoryItem } = usePOS();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [scannedBarcode, setScannedBarcode] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [scannedProduct, setScannedProduct] = useState<Product | null>(null);
   const [availableBatches, setAvailableBatches] = useState<BatchRecord[]>([]);
+  
+  // State for unrecognized QR
+  const [unrecognizedQrData, setUnrecognizedQrData] = useState<any>(null);
+  const [addQty, setAddQty] = useState<number>(10);
+  const [addMrp, setAddMrp] = useState<number>(100);
+  const [addSellingPrice, setAddSellingPrice] = useState<number>(80);
 
   const subtotal = currentBill.reduce((sum, item) => sum + item.total, 0);
 
-  const scannerRef = React.useRef<Html5QrcodeScanner | null>(null);
+  const scannerRef = React.useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
     if (isScanning && !scannerRef.current) {
-      scannerRef.current = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 150}, aspectRatio: 1.0 }, false);
-      scannerRef.current.render((decodedText) => {
-        setScannedBarcode(decodedText);
-        handleBarcodeLookup(decodedText);
-        setIsScanning(false);
-        if (scannerRef.current) {
-          scannerRef.current.clear().catch(e => console.error(e));
-          scannerRef.current = null;
-        }
-      }, () => {});
+      scannerRef.current = new Html5Qrcode("reader");
+      scannerRef.current.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          setScannedBarcode(decodedText);
+          handleBarcodeLookup(decodedText);
+          setIsScanning(false);
+          if (scannerRef.current) {
+            scannerRef.current.stop().then(() => {
+              scannerRef.current?.clear();
+              scannerRef.current = null;
+            }).catch(e => console.error(e));
+          }
+        },
+        () => {} // ignore frame errors
+      ).catch((err) => {
+        console.error("Camera start failed:", err);
+      });
     }
 
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(e => console.error(e));
-        scannerRef.current = null;
+        scannerRef.current.stop().then(() => {
+          scannerRef.current?.clear();
+          scannerRef.current = null;
+        }).catch(e => console.error(e));
       }
     };
   }, [isScanning]);
 
+  const parseQRCode = (text: string) => {
+    if (!text.includes('MEDICINE:') && !text.includes('BATCH_NO:')) return null;
+    const lines = text.split(/\r?\n/);
+    const data: any = {};
+    lines.forEach(line => {
+      const [key, ...rest] = line.split(':');
+      if (key && rest.length) {
+        data[key.trim()] = rest.join(':').trim();
+      }
+    });
+    return data;
+  };
+
   const handleBarcodeLookup = (barcode: string) => {
-    const product = findProductByBarcode(barcode);
+    const parsedQr = parseQRCode(barcode);
+    const searchCode = parsedQr ? (parsedQr['TABLET_NO'] || barcode) : barcode;
+    const product = findProductByBarcode(searchCode);
+    
     if (product) {
       setScannedProduct(product);
       setAvailableBatches(getBatchesForProduct(product.id));
+      setUnrecognizedQrData(null);
     } else {
-      toast.error('Product not found. Please add this product to inventory.');
+      if (parsedQr) {
+        setUnrecognizedQrData(parsedQr);
+        toast.error('Product not found in inventory. Please set pricing to add it.');
+      } else {
+        setUnrecognizedQrData(null);
+        toast.error('Product not found. Please add this product to inventory.');
+      }
       setScannedProduct(null);
       setAvailableBatches([]);
     }
@@ -55,6 +95,30 @@ const Billing = () => {
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (scannedBarcode) handleBarcodeLookup(scannedBarcode);
+  };
+
+  const handleAddInventory = () => {
+    if (!unrecognizedQrData) return;
+    
+    const productData = {
+      name: unrecognizedQrData['MEDICINE'],
+      barcode: unrecognizedQrData['TABLET_NO']
+    };
+    
+    const batchData = {
+      batchNumber: unrecognizedQrData['BATCH_NO'],
+      manufacturingDate: unrecognizedQrData['MFG_DATE'],
+      expiryDate: unrecognizedQrData['EXP_DATE'],
+      quantity: addQty,
+      mrp: addMrp,
+      sellingPrice: addSellingPrice
+    };
+
+    const { product } = addInventoryItem(productData, batchData);
+    setUnrecognizedQrData(null);
+    // Reload lookup
+    setScannedProduct(product);
+    setAvailableBatches(getBatchesForProduct(product.id));
   };
 
   const handleGenerateBill = () => {
@@ -218,6 +282,41 @@ const Billing = () => {
                 )) : (
                   <p className="text-slate-500 text-sm">No batches available in inventory.</p>
                 )}
+              </div>
+            </div>
+          )}
+
+          {unrecognizedQrData && (
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-xl font-bold text-orange-800 uppercase tracking-tight mb-2">New Product Scanned</h3>
+              <p className="text-sm text-orange-700 mb-6">This product is not in your inventory. You can quickly add it below using the verified data from the QR tag.</p>
+
+              <div className="bg-white p-4 rounded-xl border border-orange-100 mb-6 space-y-2">
+                <div className="flex justify-between text-sm"><span className="text-slate-500">Medicine:</span><span className="font-semibold text-slate-800">{unrecognizedQrData['MEDICINE']}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-slate-500">Batch No:</span><span className="font-semibold font-mono text-slate-800">{unrecognizedQrData['BATCH_NO']}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-slate-500">Expiry:</span><span className="font-semibold text-slate-800">{unrecognizedQrData['EXP_DATE']}</span></div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Quantity Added</label>
+                  <input type="number" value={addQty} onChange={e => setAddQty(Number(e.target.value))} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">MRP (₹)</label>
+                  <input type="number" value={addMrp} onChange={e => setAddMrp(Number(e.target.value))} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">Selling Price (₹)</label>
+                  <input type="number" value={addSellingPrice} onChange={e => setAddSellingPrice(Number(e.target.value))} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => setUnrecognizedQrData(null)} className="flex-1 bg-white border border-slate-300 text-slate-700 py-2 rounded-lg font-medium hover:bg-slate-50 transition-colors">Cancel</button>
+                <button onClick={handleAddInventory} className="flex-1 bg-emerald-600 text-white py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2">
+                  <Plus size={18} /> Add to Inventory
+                </button>
               </div>
             </div>
           )}
