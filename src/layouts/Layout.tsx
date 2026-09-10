@@ -104,6 +104,9 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
 };
 
 const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
+  const { profile } = useAuth();
+  const basePath = `/${profile?.role || 'pharmacy'}`;
+  
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10 w-full">
       <div className="flex items-center gap-2 w-full md:w-auto">
@@ -143,10 +146,10 @@ const Navbar = ({ onMenuClick }: { onMenuClick: () => void }) => {
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-sm font-medium text-slate-600">System Online</span>
         </div>
-        <button className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors">
+        <Link to={`${basePath}/notifications`} className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors">
           <Bell size={20} />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-        </button>
+        </Link>
       </div>
     </header>
   );

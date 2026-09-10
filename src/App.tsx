@@ -21,6 +21,8 @@ import Destruction from './pages/Destruction';
 import FraudDetection from './pages/FraudDetection';
 import AuditTrail from './pages/AuditTrail';
 import Analytics from './pages/Analytics';
+import Notifications from './pages/Notifications';
+
 import Billing from './pages/Billing';
 
 // Manufacturer pages
@@ -82,6 +84,8 @@ function App() {
                 <Route path="returns" element={<Returns />} />
                 <Route path="logistics" element={<Logistics />} />
                 <Route path="analytics" element={<Analytics />} />
+                <Route path="notifications" element={<Notifications />} />
+
               </Route>
             </Route>
 
@@ -98,6 +102,8 @@ function App() {
                 <Route path="logistics" element={<Logistics />} />
                 <Route path="billing" element={<Billing />} />
                 <Route path="analytics" element={<Analytics />} />
+                <Route path="notifications" element={<Notifications />} />
+
               </Route>
             </Route>
           </Routes>

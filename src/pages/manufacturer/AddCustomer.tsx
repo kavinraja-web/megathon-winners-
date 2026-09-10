@@ -92,23 +92,13 @@ const AddCustomer = () => {
               {customers.map((cust, idx) => (
                 <tr key={idx} className="hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-2 text-center text-slate-400">{idx + 1}</td>
-                  <td className="px-4 py-2">
-                    <input 
-                      type="text" 
-                      value={cust.id} 
-                      onChange={(e) => updateCell(idx, 'id', e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-md px-3 py-1.5 outline-none shadow-sm transition-colors"
-                    />
+                  <td className="px-4 py-2 font-mono text-xs text-slate-500">
+                    {cust.id}
                   </td>
                   <td className="px-4 py-2">
-                    <select
-                      value={cust.type}
-                      onChange={(e) => updateCell(idx, 'type', e.target.value as any)}
-                      className="w-full bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-md px-3 py-1.5 outline-none shadow-sm transition-colors"
-                    >
-                      <option value="Distributor">Distributor</option>
-                      <option value="Pharmacy">Pharmacy</option>
-                    </select>
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                      {cust.type}
+                    </span>
                   </td>
                   <td className="px-4 py-2">
                     <input 

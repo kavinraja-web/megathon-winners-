@@ -100,6 +100,28 @@ const Reports = () => {
             onClick={() => {
               const id = window.prompt('Enter the unique ID of the recipient to share this report:');
               if (id && id.trim() !== '') {
+                const cleanId = id.trim().toLowerCase();
+                
+                // Add Notification
+                const notifsKey = `sys_notifications_${cleanId}`;
+                const existingNotifs = JSON.parse(localStorage.getItem(notifsKey) || '[]');
+                existingNotifs.unshift({
+                  type: 'blue',
+                  text: `New Distribution Report shared by ${selectedCustomer?.name || 'Manufacturer'} on ${reportDate}.`
+                });
+                localStorage.setItem(notifsKey, JSON.stringify(existingNotifs));
+
+                // Add Shared Report
+                const reportsKey = `shared_reports_${cleanId}`;
+                const existingReports = JSON.parse(localStorage.getItem(reportsKey) || '[]');
+                existingReports.unshift({
+                  date: reportDate,
+                  from: 'Manufacturer',
+                  total: grandTotal,
+                  items: reportItems.length
+                });
+                localStorage.setItem(reportsKey, JSON.stringify(existingReports));
+
                 toast.success(`Report securely shared to ID: ${id.trim().toUpperCase()}`);
               }
             }}
