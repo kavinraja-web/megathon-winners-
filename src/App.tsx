@@ -63,6 +63,7 @@ function App() {
             <Route path="settings" element={<MfrSettings />} />
           </Route>
 
+          {/* Existing Pharmacist / Admin Routes */}
           <Route path="/app" element={<Layout />}>
             <Route index element={<Navigate to="/app/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
