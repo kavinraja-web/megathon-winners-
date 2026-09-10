@@ -6,41 +6,49 @@ import { Download, Printer, Search, RefreshCw } from 'lucide-react';
 
 const QrGenerator = () => {
   const [searchParams] = useSearchParams();
-  const [batchId, setBatchId] = useState(searchParams.get('batch') || '');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('batch') || '');
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState<any>(null);
   const [validationError, setValidationError] = useState('');
 
   useEffect(() => {
-    if (batchId) {
-      handleSearch();
-    }
-  }, []);
-
-  const handleSearch = () => {
-    const found = initialMfrBatches.find(b => b.batchNumber === batchId || b.id === batchId || b.tabletId === batchId);
-    if (!found) {
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const results = initialMfrBatches.filter(b => 
+        (b.batchNumber && b.batchNumber.toLowerCase().includes(query)) ||
+        (b.tabletId && b.tabletId.toLowerCase().includes(query)) ||
+        (b.medicineName && b.medicineName.toLowerCase().includes(query))
+      );
+      setSuggestions(results);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
       setSelectedBatch(null);
-      setValidationError('');
-      return;
     }
+  }, [searchQuery]);
+
+  const selectBatch = (batch: any) => {
+    setSearchQuery(batch.batchNumber || batch.tabletId || batch.medicineName);
+    setShowSuggestions(false);
     
-    // Validate required fields
-    if (!found.medicineName || !found.tabletId || !found.batchNumber || !found.mfgDate || !found.expDate) {
+    if (!batch.medicineName || !batch.tabletId || !batch.batchNumber || !batch.mfgDate || !batch.expDate) {
       setValidationError('Please complete all required medicine and batch details before generating the QR code.');
       setSelectedBatch(null);
       return;
     }
 
     setValidationError('');
-    setSelectedBatch(found);
+    setSelectedBatch(batch);
   };
 
   const generateQrPayload = (batch: any) => {
-    return `MEDICINE: ${batch.medicineName} ${batch.strength}
-TABLET_NO: ${batch.tabletId}
-BATCH_NO: ${batch.batchNumber}
-MFG_DATE: ${batch.mfgDate}
-EXP_DATE: ${batch.expDate}`;
+    return `MEDICINE: ${batch.medicineName} ${batch.strength || ''}
+TABLET NUMBER: ${batch.tabletId}
+BATCH NUMBER: ${batch.batchNumber}
+MANUFACTURED DATE: ${batch.mfgDate}
+EXPIRY DATE: ${batch.expDate}`.trim();
   };
 
   return (
@@ -125,11 +133,7 @@ EXP_DATE: ${batch.expDate}`;
             </div>
           </div>
         </div>
-      ) : batchId && !validationError && (
-        <div className="bg-white p-8 rounded-xl border border-slate-200 text-center">
-          <p className="text-slate-500">No batch found matching "{batchId}". Please try again.</p>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 };

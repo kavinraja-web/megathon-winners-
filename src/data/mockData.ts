@@ -1,4 +1,4 @@
-export type Role = 'Manufacturer' | 'Distributor' | 'Pharmacy' | 'Destruction Facility' | 'Regulator';
+export type Role = 'Manufacturer' | 'Distributor' | 'Pharmacy';
 
 export type BatchStatus = 'Active' | 'Near Expiry' | 'Expired' | 'Return Requested' | 'In Transit' | 'Verified' | 'Awaiting Destruction' | 'Destroyed';
 

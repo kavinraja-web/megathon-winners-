@@ -5,9 +5,11 @@ import {
   Layers, Truck, ScanLine, AlertTriangle, 
   Activity, BarChart3, Bell, Building2, Settings, User, LogOut, Search
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
   const location = useLocation();
+  const { profile, signOut } = useAuth();
   
   const navItems = [
     { name: 'Dashboard', path: '/manufacturer/dashboard', icon: LayoutDashboard },
@@ -65,14 +67,14 @@ const Sidebar = () => {
               <User size={16} />
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-white truncate">ABC Pharma</p>
+              <p className="text-sm font-medium text-white truncate">{profile?.full_name || 'Manufacturer'}</p>
               <p className="text-xs text-slate-400 truncate">Manufacturer</p>
             </div>
           </div>
-          <Link to="/" className="flex items-center justify-center gap-2 text-sm text-red-400 hover:text-red-300 mt-2 py-2 bg-slate-700/50 rounded-lg transition-colors">
+          <button onClick={signOut} className="w-full flex items-center justify-center gap-2 text-sm text-red-400 hover:text-red-300 mt-2 py-2 bg-slate-700/50 rounded-lg transition-colors">
             <LogOut size={16} />
             Logout
-          </Link>
+          </button>
         </div>
       </div>
     </div>

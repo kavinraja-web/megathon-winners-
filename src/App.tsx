@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { POSProvider } from './context/POSContext';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import Layout from './layouts/Layout';
 import ManufacturerLayout from './layouts/ManufacturerLayout';
 import Landing from './pages/Landing';
@@ -38,50 +40,68 @@ import MfrSettings from './pages/manufacturer/Settings';
 
 function App() {
   return (
-    <POSProvider>
-      <BrowserRouter>
-        <Toaster position="top-right" />
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          
-          {/* Manufacturer Routes */}
-          <Route path="/manufacturer" element={<ManufacturerLayout />}>
-            <Route index element={<Navigate to="/manufacturer/dashboard" replace />} />
-            <Route path="dashboard" element={<MfrDashboard />} />
-            <Route path="batches" element={<MfrBatches />} />
-            <Route path="add-batch" element={<MfrAddBatch />} />
-            <Route path="qr-generator" element={<MfrQrGenerator />} />
-            <Route path="inventory" element={<MfrInventoryStock />} />
-            <Route path="distribution" element={<MfrDistribution />} />
-            <Route path="scan-verify" element={<MfrScanVerify />} />
-            <Route path="expiry-alerts" element={<MfrExpiryAlerts />} />
-            <Route path="activity" element={<MfrSalesActivity />} />
-            <Route path="reports" element={<MfrReports />} />
-            <Route path="notifications" element={<MfrNotifications />} />
-            <Route path="profile" element={<MfrCompanyProfile />} />
-            <Route path="settings" element={<MfrSettings />} />
-          </Route>
+    <AuthProvider>
+      <POSProvider>
+        <BrowserRouter>
+          <Toaster position="top-right" />
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            
+            {/* Manufacturer Routes */}
+            <Route path="/manufacturer" element={<ProtectedRoute allowedRoles={['manufacturer']} />}>
+              <Route element={<ManufacturerLayout />}>
+                <Route index element={<Navigate to="/manufacturer/dashboard" replace />} />
+                <Route path="dashboard" element={<MfrDashboard />} />
+                <Route path="batches" element={<MfrBatches />} />
+                <Route path="add-batch" element={<MfrAddBatch />} />
+                <Route path="qr-generator" element={<MfrQrGenerator />} />
+                <Route path="inventory" element={<MfrInventoryStock />} />
+                <Route path="distribution" element={<MfrDistribution />} />
+                <Route path="scan-verify" element={<MfrScanVerify />} />
+                <Route path="expiry-alerts" element={<MfrExpiryAlerts />} />
+                <Route path="activity" element={<MfrSalesActivity />} />
+                <Route path="reports" element={<MfrReports />} />
+                <Route path="notifications" element={<MfrNotifications />} />
+                <Route path="profile" element={<MfrCompanyProfile />} />
+                <Route path="settings" element={<MfrSettings />} />
+              </Route>
+            </Route>
 
-          {/* Existing Pharmacist / Admin Routes */}
-          <Route path="/app" element={<Layout />}>
-            <Route index element={<Navigate to="/app/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="batches" element={<Batches />} />
-            <Route path="batches/:id" element={<BatchDetails />} />
-            <Route path="scanner" element={<Scanner />} />
-            <Route path="expiry" element={<ExpiryAlerts />} />
-            <Route path="returns" element={<Returns />} />
-            <Route path="logistics" element={<Logistics />} />
-            <Route path="destruction" element={<Destruction />} />
-            <Route path="fraud" element={<FraudDetection />} />
-            <Route path="audit" element={<AuditTrail />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="billing" element={<Billing />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </POSProvider>
+            {/* Distributor Routes */}
+            <Route path="/distributor" element={<ProtectedRoute allowedRoles={['distributor']} />}>
+              <Route element={<Layout />}>
+                <Route index element={<Navigate to="/distributor/dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="batches" element={<Batches />} />
+                <Route path="batches/:id" element={<BatchDetails />} />
+                <Route path="scanner" element={<Scanner />} />
+                <Route path="expiry" element={<ExpiryAlerts />} />
+                <Route path="returns" element={<Returns />} />
+                <Route path="logistics" element={<Logistics />} />
+                <Route path="analytics" element={<Analytics />} />
+              </Route>
+            </Route>
+
+            {/* Pharmacy Routes */}
+            <Route path="/pharmacy" element={<ProtectedRoute allowedRoles={['pharmacy']} />}>
+              <Route element={<Layout />}>
+                <Route index element={<Navigate to="/pharmacy/dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="batches" element={<Batches />} />
+                <Route path="batches/:id" element={<BatchDetails />} />
+                <Route path="scanner" element={<Scanner />} />
+                <Route path="expiry" element={<ExpiryAlerts />} />
+                <Route path="returns" element={<Returns />} />
+                <Route path="logistics" element={<Logistics />} />
+                <Route path="billing" element={<Billing />} />
+                <Route path="analytics" element={<Analytics />} />
+              </Route>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </POSProvider>
+    </AuthProvider>
   );
 }
 

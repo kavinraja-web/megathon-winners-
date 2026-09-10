@@ -2,44 +2,38 @@ import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Package, QrCode, AlertTriangle, 
-  RefreshCw, Truck, Trash2, ShieldAlert, FileText, 
+  RefreshCw, Truck, FileText, 
   History, BarChart3, Bell, Search, User, LogOut 
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = () => {
   const location = useLocation();
+  const { profile, signOut } = useAuth();
+  
+  const userRole = profile?.role || 'pharmacy';
+  const roleName = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  const basePath = `/${userRole}`;
   
   const navItems = [
-    { name: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard },
-    { name: 'Medicine Batches', path: '/app/batches', icon: Package },
-    { name: 'QR Scanner', path: '/app/scanner', icon: QrCode },
-    { name: 'Expiry Alerts', path: '/app/expiry', icon: AlertTriangle },
-    { name: 'Return Requests', path: '/app/returns', icon: RefreshCw },
-    { name: 'Reverse Logistics', path: '/app/logistics', icon: Truck },
-    { name: 'Destruction', path: '/app/destruction', icon: Trash2 },
-    { name: 'Fraud Detection', path: '/app/fraud', icon: ShieldAlert },
-    { name: 'Audit Trail', path: '/app/audit', icon: History },
-    { name: 'Billing POS', path: '/app/billing', icon: FileText },
-    { name: 'Analytics', path: '/app/analytics', icon: BarChart3 },
+    { name: 'Dashboard', path: `${basePath}/dashboard`, icon: LayoutDashboard },
+    { name: 'Medicine Batches', path: `${basePath}/batches`, icon: Package },
+    { name: 'QR Scanner', path: `${basePath}/scanner`, icon: QrCode },
+    { name: 'Expiry Alerts', path: `${basePath}/expiry`, icon: AlertTriangle },
+    { name: 'Return Requests', path: `${basePath}/returns`, icon: RefreshCw },
+    { name: 'Reverse Logistics', path: `${basePath}/logistics`, icon: Truck },
+    { name: 'Audit Trail', path: `${basePath}/audit`, icon: History },
+    { name: 'Billing POS', path: `${basePath}/billing`, icon: FileText },
+    { name: 'Analytics', path: `${basePath}/analytics`, icon: BarChart3 },
   ];
-
-  const userRole = localStorage.getItem('USER_ROLE') || 'regulator';
-  const roleName = userRole.charAt(0).toUpperCase() + userRole.slice(1);
 
   const filteredNavItems = navItems.filter(item => {
     if (userRole === 'pharmacy') {
       return ['Dashboard', 'QR Scanner', 'Billing POS', 'Medicine Batches', 'Return Requests', 'Expiry Alerts'].includes(item.name);
     }
-    if (userRole === 'manufacturer') {
-      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Reverse Logistics', 'Fraud Detection', 'Analytics'].includes(item.name);
-    }
     if (userRole === 'distributor') {
       return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Reverse Logistics', 'Expiry Alerts'].includes(item.name);
     }
-    if (userRole === 'facility') {
-      return ['Dashboard', 'QR Scanner', 'Destruction', 'Audit Trail'].includes(item.name);
-    }
-    // regulator sees all
     return true;
   });
 
@@ -87,14 +81,14 @@ const Sidebar = () => {
               <User size={16} />
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-white truncate">{roleName} User</p>
+              <p className="text-sm font-medium text-white truncate">{profile?.full_name || roleName}</p>
               <p className="text-xs text-slate-400 truncate">{roleName} Role</p>
             </div>
           </div>
-          <Link to="/" onClick={() => localStorage.removeItem('USER_ROLE')} className="flex items-center justify-center gap-2 text-sm text-red-400 hover:text-red-300 mt-2 py-2 bg-slate-700/50 rounded-lg transition-colors">
+          <button onClick={signOut} className="w-full flex items-center justify-center gap-2 text-sm text-red-400 hover:text-red-300 mt-2 py-2 bg-slate-700/50 rounded-lg transition-colors">
             <LogOut size={16} />
             Logout
-          </Link>
+          </button>
         </div>
       </div>
     </div>
@@ -114,21 +108,6 @@ const Navbar = () => {
       </div>
       
       <div className="flex items-center gap-6">
-        <button 
-          onClick={() => {
-            if (window.confirm('Reset all demo data?')) {
-              localStorage.removeItem('PHARMAX_PRODUCTS');
-              localStorage.removeItem('PHARMAX_BATCHES');
-              localStorage.removeItem('PHARMAX_BILLS');
-              localStorage.removeItem('PHARMAX_REVERSE_CHAIN');
-              localStorage.removeItem('PHARMAX_DESTRUCTION_RECORDS');
-              window.location.reload();
-            }
-          }}
-          className="text-xs bg-orange-100 text-orange-700 px-3 py-1.5 rounded-lg border border-orange-200 font-medium hover:bg-orange-200 transition-colors"
-        >
-          Reset Demo Data
-        </button>
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span className="text-sm font-medium text-slate-600">System Online</span>

@@ -1,8 +1,29 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShieldCheck, Recycle, Activity, ArrowRight, QrCode, RefreshCw, Trash2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShieldCheck, Recycle, Activity, ArrowRight, QrCode, RefreshCw, Trash2, LogIn } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Landing = () => {
+  const { session, profile } = useAuth();
+  const navigate = useNavigate();
+
+  const handleScanClick = () => {
+    if (!session) {
+      toast.error('Please login as Pharmacy to scan medicines', {
+        icon: '🔒',
+        duration: 4000,
+      });
+      navigate('/login');
+    } else if (profile?.role === 'pharmacy') {
+      navigate('/pharmacy/scanner');
+    } else {
+      toast.error('Medicine scanning is available for Pharmacy accounts only.', {
+        icon: '🛑'
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-200">
       {/* Navbar */}
@@ -19,13 +40,19 @@ const Landing = () => {
           <a href="#impact" className="hover:text-emerald-600 transition-colors">Impact</a>
         </div>
         <div className="flex gap-4">
-          <Link to="/app/scanner" className="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900">
+          <button onClick={handleScanClick} className="hidden md:flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900">
             <QrCode size={18} />
             Scan Medicine
-          </Link>
-          <Link to="/login" className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
-            Login
-          </Link>
+          </button>
+          {!session ? (
+            <Link to="/login" className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
+              Login
+            </Link>
+          ) : (
+            <Link to={`/${profile?.role}/dashboard`} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
+              Dashboard
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -50,7 +77,7 @@ const Landing = () => {
               Get Started
               <ArrowRight size={18} />
             </Link>
-            <Link to="/app/dashboard" className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-6 py-3.5 rounded-xl font-medium transition-colors shadow-sm">
+            <Link to="/login" className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-6 py-3.5 rounded-xl font-medium transition-colors shadow-sm">
               Explore Platform
             </Link>
           </div>
