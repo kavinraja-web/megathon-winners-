@@ -62,7 +62,7 @@ const Analytics = () => {
 
   const generateAIReport = async () => {
     if (!apiKey) {
-      toast.error("Please enter a Gemini API Key to generate the AI report.");
+      toast.error("Gemini API Key is missing from environment variables.");
       return;
     }
 
@@ -254,7 +254,7 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-4 py-20 text-center px-8">
                 <FileText size={48} className="text-slate-200" />
-                <p>No report generated yet.<br/>Enter your API key and click "Generate AI Report" to get started.</p>
+                <p>No report generated yet.<br/>Click "Generate AI Report" to get started.</p>
               </div>
             )}
           </div>
