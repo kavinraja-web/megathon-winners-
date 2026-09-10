@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Building2, Store, Truck, ArrowRight, UserPlus, LogIn } from 'lucide-react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { Building2, Store, Truck, ArrowRight, UserPlus, LogIn, Home } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -76,7 +76,11 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
+      <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-slate-600 hover:text-emerald-600 transition-colors font-medium">
+        <Home size={20} />
+        <span>Home</span>
+      </Link>
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
           {isLogin ? 'Sign in to your account' : 'Create a new account'}

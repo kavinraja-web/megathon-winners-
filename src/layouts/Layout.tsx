@@ -82,12 +82,15 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
       <div className="mt-auto p-4">
         <div className="bg-slate-800 rounded-xl p-4 flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
               <User size={16} />
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">{profile?.full_name || roleName}</p>
-              <p className="text-xs text-slate-400 truncate">{roleName} Role</p>
+              <div className="flex flex-col">
+                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{roleName}</p>
+                <p className="text-[10px] text-emerald-400 font-mono truncate">ID: {profile?.id?.substring(0,8).toUpperCase() || 'UNKNOWN'}</p>
+              </div>
             </div>
           </div>
           <button onClick={signOut} className="w-full flex items-center justify-center gap-2 text-sm text-red-400 hover:text-red-300 mt-2 py-2 bg-slate-700/50 rounded-lg transition-colors">

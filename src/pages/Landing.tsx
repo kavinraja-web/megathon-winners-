@@ -50,7 +50,7 @@ const Landing = () => {
             </Link>
           ) : (
             <Link to={`/${profile?.role}/dashboard`} className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
-              Dashboard
+              Login
             </Link>
           )}
         </div>

@@ -223,7 +223,7 @@ const Reports = () => {
                     type="number" 
                     value={item.quantity}
                     onChange={(e) => updateQuantity(index, parseInt(e.target.value) || 0)}
-                    className="w-20 text-right bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-2 py-1 outline-none print:border-none print:p-0 print:appearance-none inline-block"
+                    className="w-24 text-right bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-md px-3 py-1.5 outline-none print:bg-transparent print:border-none print:p-0 print:appearance-none inline-block shadow-sm"
                   />
                 </td>
                 <td className="py-3 px-4 text-right">₹{item.price.toFixed(2)}</td>
