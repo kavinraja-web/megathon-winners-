@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Save, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { initialMfrBatches, ManufacturerBatch } from '../../data/manufacturerData';
 
 const AddBatch = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     medicineName: '',
+    tabletId: '',
+    batchNumber: '',
     genericName: '',
     type: 'Tablet',
     strength: '',
@@ -16,7 +19,6 @@ const AddBatch = () => {
     description: ''
   });
   const [success, setSuccess] = useState('');
-  const [newBatchId, setNewBatchId] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({...formData, [e.target.name]: e.target.value});
@@ -32,8 +34,25 @@ const AddBatch = () => {
       return;
     }
 
-    const generatedBatchId = `BATCH-${formData.medicineName.substring(0,3).toUpperCase()}-${Math.floor(Math.random() * 100000)}`;
-    setNewBatchId(generatedBatchId);
+    const newBatch: ManufacturerBatch = {
+      id: formData.tabletId, // Internal ID is tabletId for now
+      tabletId: formData.tabletId,
+      batchNumber: formData.batchNumber,
+      medicineName: formData.medicineName,
+      genericName: formData.genericName,
+      type: formData.type,
+      strength: formData.strength,
+      mfgDate: formData.mfgDate,
+      expDate: formData.expDate,
+      mrp: parseFloat(formData.mrp),
+      manufacturer: 'ABC Pharmaceuticals Ltd.',
+      mfgQuantity: parseInt(formData.mfgQuantity),
+      distributedQuantity: 0,
+      remainingQuantity: parseInt(formData.mfgQuantity),
+      status: 'ACTIVE'
+    };
+
+    initialMfrBatches.push(newBatch);
     setSuccess('Medicine batch registered successfully.');
   };
 
@@ -45,16 +64,16 @@ const AddBatch = () => {
             <Save size={32} />
           </div>
           <h2 className="text-2xl font-bold text-slate-800 mb-2">{success}</h2>
-          <p className="text-slate-600 mb-6">Generated Batch Number: <span className="font-mono font-bold bg-slate-100 px-2 py-1 rounded">{newBatchId}</span></p>
+          <p className="text-slate-600 mb-6">Generated Batch Number: <span className="font-mono font-bold bg-slate-100 px-2 py-1 rounded">{formData.batchNumber}</span></p>
           
           <div className="flex justify-center gap-4">
             <button onClick={() => navigate('/manufacturer/batches')} className="px-6 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-medium">
               View Batches
             </button>
-            <button onClick={() => navigate(`/manufacturer/qr-generator?batch=${newBatchId}`)} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+            <button onClick={() => navigate(`/manufacturer/qr-generator?batch=${formData.batchNumber}`)} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
               Generate QR
             </button>
-            <button onClick={() => { setSuccess(''); setFormData({...formData, medicineName: '', genericName: ''}); }} className="px-6 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium">
+            <button onClick={() => { setSuccess(''); setFormData({...formData, medicineName: '', tabletId: '', batchNumber: ''}); }} className="px-6 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium">
               Add Another
             </button>
           </div>
@@ -81,8 +100,12 @@ const AddBatch = () => {
             <input required name="medicineName" value={formData.medicineName} onChange={handleChange} type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Paracetamol" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Generic Name</label>
-            <input name="genericName" value={formData.genericName} onChange={handleChange} type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. Acetaminophen" />
+            <label className="block text-sm font-medium text-slate-700 mb-2">Tablet / Medicine ID *</label>
+            <input required name="tabletId" value={formData.tabletId} onChange={handleChange} type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. TAB-PAR-0001" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Batch Number *</label>
+            <input required name="batchNumber" value={formData.batchNumber} onChange={handleChange} type="text" className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. BATCH-PAR-26001" />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Dosage Form</label>
@@ -113,10 +136,6 @@ const AddBatch = () => {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Manufacturing Quantity *</label>
             <input required name="mfgQuantity" value={formData.mfgQuantity} onChange={handleChange} type="number" min="1" className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 10000" />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
-            <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Additional notes..."></textarea>
           </div>
         </div>
         

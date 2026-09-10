@@ -2,7 +2,10 @@ export type MfrBatchStatus = 'ACTIVE' | 'NEAR EXPIRY' | 'EXPIRED' | 'FULLY DISTR
 
 export interface ManufacturerBatch {
   id: string; // Internal ID
-  batchNumber: string;
+  tabletId: string;
+  tabletId: "TAB-000000",
+    manufacturer: "ABC Pharmaceuticals Ltd.",
+    batchNumber: string;
   medicineName: string;
   genericName: string;
   type: string;
@@ -10,6 +13,7 @@ export interface ManufacturerBatch {
   mfgDate: string;
   expDate: string;
   mrp: number;
+  manufacturer: string;
   mfgQuantity: number;
   distributedQuantity: number;
   remainingQuantity: number;
@@ -19,6 +23,8 @@ export interface ManufacturerBatch {
 export const initialMfrBatches: ManufacturerBatch[] = [
   {
     id: 'MED-000101',
+    tabletId: "TAB-000000",
+    manufacturer: "ABC Pharmaceuticals Ltd.",
     batchNumber: 'PCT-24051',
     medicineName: 'Paracetamol',
     genericName: 'Acetaminophen',
@@ -34,6 +40,8 @@ export const initialMfrBatches: ManufacturerBatch[] = [
   },
   {
     id: 'MED-000102',
+    tabletId: "TAB-000000",
+    manufacturer: "ABC Pharmaceuticals Ltd.",
     batchNumber: 'AMX-24031',
     medicineName: 'Amoxicillin',
     genericName: 'Amoxicillin Trihydrate',
@@ -49,6 +57,8 @@ export const initialMfrBatches: ManufacturerBatch[] = [
   },
   {
     id: 'MED-000103',
+    tabletId: "TAB-000000",
+    manufacturer: "ABC Pharmaceuticals Ltd.",
     batchNumber: 'CET-23102',
     medicineName: 'Cetirizine',
     genericName: 'Cetirizine Hydrochloride',
@@ -64,6 +74,8 @@ export const initialMfrBatches: ManufacturerBatch[] = [
   },
   {
     id: 'MED-000104',
+    tabletId: "TAB-000000",
+    manufacturer: "ABC Pharmaceuticals Ltd.",
     batchNumber: 'AZI-24091',
     medicineName: 'Azithromycin',
     genericName: 'Azithromycin Dihydrate',
@@ -79,6 +91,8 @@ export const initialMfrBatches: ManufacturerBatch[] = [
   },
   {
     id: 'MED-000105',
+    tabletId: "TAB-000000",
+    manufacturer: "ABC Pharmaceuticals Ltd.",
     batchNumber: 'IBU-25011',
     medicineName: 'Ibuprofen',
     genericName: 'Ibuprofen',

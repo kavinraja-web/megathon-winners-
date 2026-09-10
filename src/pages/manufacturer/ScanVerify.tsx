@@ -63,10 +63,24 @@ const ScanVerify = () => {
     processBatchId(manualId.trim());
   };
 
-  const processBatchId = (id: string) => {
+  const processBatchId = (scannedText: string) => {
+    // Check if the scanned text is our new payload format
+    let idToSearch = scannedText;
+    if (scannedText.includes('TABLET_NO:')) {
+      const match = scannedText.match(/TABLET_NO:\s*([^\n]+)/);
+      if (match && match[1]) {
+        idToSearch = match[1].trim();
+      }
+    } else if (scannedText.includes('BATCH_NO:')) {
+      const match = scannedText.match(/BATCH_NO:\s*([^\n]+)/);
+      if (match && match[1]) {
+        idToSearch = match[1].trim();
+      }
+    }
+
     // Look up the batch
     const updatedBatches = updateBatchesBasedOnDate(initialMfrBatches);
-    const found = updatedBatches.find(b => b.id === id || b.batchNumber === id);
+    const found = updatedBatches.find(b => b.id === idToSearch || b.batchNumber === idToSearch || b.tabletId === idToSearch);
     
     if (found) {
       setResult(found);
