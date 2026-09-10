@@ -383,15 +383,12 @@ const Scanner = () => {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-                    <button onClick={() => alert("Added to Inventory Successfully!")} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
-                      <CheckCircle size={18} /> Add to Inventory
-                    </button>
-                    <button onClick={() => alert("Removed from System")} className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
-                      <XCircle size={18} /> Remove
-                    </button>
-                    <button onClick={() => alert("Added to Current Bill")} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
+                  <div className="flex gap-3 mt-4">
+                    <button onClick={() => alert("Added to Current Bill")} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2 flex-1">
                       <Search size={18} /> Add to Bill
+                    </button>
+                    <button onClick={() => alert("Removed from System")} className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2 flex-1">
+                      <XCircle size={18} /> Remove
                     </button>
                   </div>
                 </div>
