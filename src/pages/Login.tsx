@@ -16,7 +16,13 @@ const Login = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedRole === 'manufacturer') {
+    const formData = new FormData(e.target as HTMLFormElement);
+    const roleFromForm = formData.get('role') || selectedRole;
+    if (roleFromForm) {
+      localStorage.setItem('USER_ROLE', roleFromForm as string);
+    }
+    
+    if (roleFromForm === 'manufacturer') {
       navigate('/manufacturer/dashboard');
     } else {
       navigate('/app/dashboard');

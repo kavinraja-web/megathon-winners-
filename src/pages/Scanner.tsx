@@ -1,17 +1,40 @@
-import React, { useState } from 'react';
-import { QrCode, Search, ShieldAlert, CheckCircle, Upload, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { QrCode, Search, ShieldAlert, CheckCircle, AlertTriangle, Camera } from 'lucide-react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 const Scanner = () => {
   const [scanState, setScanState] = useState<'idle' | 'scanning' | 'success' | 'fraud'>('idle');
   const [batchId, setBatchId] = useState('');
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
-  const handleScan = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!batchId) return;
-    
+  useEffect(() => {
+    if (isCameraOpen && !scannerRef.current) {
+      scannerRef.current = new Html5QrcodeScanner("scanner-reader", { fps: 10, qrbox: {width: 250, height: 150}, aspectRatio: 1.0 }, false);
+      scannerRef.current.render((decodedText) => {
+        setBatchId(decodedText);
+        setIsCameraOpen(false);
+        triggerScanLogic(decodedText);
+        if (scannerRef.current) {
+          scannerRef.current.clear().catch(e => console.error(e));
+          scannerRef.current = null;
+        }
+      }, () => {});
+    }
+
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(e => console.error(e));
+        scannerRef.current = null;
+      }
+    };
+  }, [isCameraOpen]);
+
+  const triggerScanLogic = (id: string) => {
+    if (!id) return;
     setScanState('scanning');
     setTimeout(() => {
-      if (batchId === 'B12351') {
+      if (id === 'B12351' || id === 'OLD2025Z') {
         setScanState('fraud');
       } else {
         setScanState('success');
@@ -19,9 +42,15 @@ const Scanner = () => {
     }, 1500);
   };
 
+  const handleScan = (e: React.FormEvent) => {
+    e.preventDefault();
+    triggerScanLogic(batchId);
+  };
+
   const resetScanner = () => {
     setScanState('idle');
     setBatchId('');
+    setIsCameraOpen(false);
   };
 
   return (
@@ -56,11 +85,38 @@ const Scanner = () => {
             </button>
           </form>
 
-          <div className="mt-8 flex items-center justify-center gap-2 text-sm text-slate-500">
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 text-sm text-slate-500">
             <span>or</span>
-            <button className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-medium px-4 py-2 rounded-lg hover:bg-emerald-50 transition-colors">
-              <Upload size={16} /> Upload Image
-            </button>
+            {!isCameraOpen ? (
+              <button 
+                onClick={() => setIsCameraOpen(true)}
+                className="flex items-center gap-2 bg-emerald-600 text-white font-medium px-6 py-3 rounded-xl hover:bg-emerald-700 transition-colors shadow-sm"
+              >
+                <Camera size={18} /> Open Camera to Scan
+              </button>
+            ) : (
+              <div className="w-full max-w-sm">
+                <div className="bg-slate-900 rounded-xl overflow-hidden relative flex flex-col items-center justify-center mb-4 min-h-[300px]">
+                  {(!window.isSecureContext || !navigator.mediaDevices) ? (
+                    <div className="p-6 text-center">
+                      <AlertTriangle size={48} className="text-red-500 mx-auto mb-4" />
+                      <h3 className="text-white font-bold text-lg mb-2">Camera Blocked</h3>
+                      <p className="text-slate-300 text-sm mb-4">
+                        Please open this directly in Chrome/Safari using https://
+                      </p>
+                    </div>
+                  ) : (
+                    <div id="scanner-reader" className="w-full h-full object-cover"></div>
+                  )}
+                </div>
+                <button 
+                  onClick={() => setIsCameraOpen(false)}
+                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Close Camera
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
