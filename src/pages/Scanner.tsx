@@ -1,31 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QrCode, Search, ShieldAlert, CheckCircle, AlertTriangle, Camera } from 'lucide-react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 
 const Scanner = () => {
   const [scanState, setScanState] = useState<'idle' | 'scanning' | 'success' | 'fraud'>('idle');
   const [batchId, setBatchId] = useState('');
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
     if (isCameraOpen && !scannerRef.current) {
-      scannerRef.current = new Html5QrcodeScanner("scanner-reader", { fps: 10, qrbox: {width: 250, height: 150}, aspectRatio: 1.0 }, false);
-      scannerRef.current.render((decodedText) => {
-        setBatchId(decodedText);
-        setIsCameraOpen(false);
-        triggerScanLogic(decodedText);
-        if (scannerRef.current) {
-          scannerRef.current.clear().catch(e => console.error(e));
-          scannerRef.current = null;
-        }
-      }, () => {});
+      scannerRef.current = new Html5Qrcode("scanner-reader");
+      
+      scannerRef.current.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          setBatchId(decodedText);
+          setIsCameraOpen(false);
+          triggerScanLogic(decodedText);
+          if (scannerRef.current) {
+            scannerRef.current.stop().then(() => {
+              scannerRef.current?.clear();
+              scannerRef.current = null;
+            }).catch(e => console.error(e));
+          }
+        },
+        () => {} // ignore frame errors
+      ).catch((err) => {
+        console.error("Camera start failed:", err);
+      });
     }
 
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(e => console.error(e));
-        scannerRef.current = null;
+        scannerRef.current.stop().then(() => {
+          scannerRef.current?.clear();
+          scannerRef.current = null;
+        }).catch(e => console.error(e));
       }
     };
   }, [isCameraOpen]);

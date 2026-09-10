@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePOS } from '../context/POSContext';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { Search, Plus, Minus, Trash2, Camera, Receipt, AlertOctagon, CheckCircle2, AlertTriangle, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { BatchRecord, Product } from '../data/db';
@@ -16,26 +16,37 @@ const Billing = () => {
 
   const subtotal = currentBill.reduce((sum, item) => sum + item.total, 0);
 
-  const scannerRef = React.useRef<Html5QrcodeScanner | null>(null);
+  const scannerRef = React.useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
     if (isScanning && !scannerRef.current) {
-      scannerRef.current = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 150}, aspectRatio: 1.0 }, false);
-      scannerRef.current.render((decodedText) => {
-        setScannedBarcode(decodedText);
-        handleBarcodeLookup(decodedText);
-        setIsScanning(false);
-        if (scannerRef.current) {
-          scannerRef.current.clear().catch(e => console.error(e));
-          scannerRef.current = null;
-        }
-      }, () => {});
+      scannerRef.current = new Html5Qrcode("reader");
+      scannerRef.current.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          setScannedBarcode(decodedText);
+          handleBarcodeLookup(decodedText);
+          setIsScanning(false);
+          if (scannerRef.current) {
+            scannerRef.current.stop().then(() => {
+              scannerRef.current?.clear();
+              scannerRef.current = null;
+            }).catch(e => console.error(e));
+          }
+        },
+        () => {} // ignore frame errors
+      ).catch((err) => {
+        console.error("Camera start failed:", err);
+      });
     }
 
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(e => console.error(e));
-        scannerRef.current = null;
+        scannerRef.current.stop().then(() => {
+          scannerRef.current?.clear();
+          scannerRef.current = null;
+        }).catch(e => console.error(e));
       }
     };
   }, [isScanning]);
