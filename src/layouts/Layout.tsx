@@ -19,7 +19,7 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
     { name: 'Dashboard', path: `${basePath}/dashboard`, icon: LayoutDashboard },
     { name: 'Medicine Batches', path: `${basePath}/batches`, icon: Package },
     { name: 'QR Scanner', path: `${basePath}/scanner`, icon: QrCode },
-    { name: 'Expiry Alerts', path: `${basePath}/expiry-alerts`, icon: AlertTriangle },
+    { name: 'Expiry Alerts', path: `${basePath}/expiry`, icon: AlertTriangle },
     { name: 'Return Requests', path: `${basePath}/returns`, icon: RefreshCw },
     { name: 'Reverse Logistics', path: `${basePath}/logistics`, icon: Truck },
     { name: 'Audit Trail', path: `${basePath}/audit`, icon: History },
