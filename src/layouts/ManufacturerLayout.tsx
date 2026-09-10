@@ -19,7 +19,6 @@ const Sidebar = () => {
     { name: 'Reports', path: '/manufacturer/reports', icon: FileText },
     { name: 'QR / Barcode Generator', path: '/manufacturer/qr-generator', icon: QrCode },
     { name: 'Inventory & Stock', path: '/manufacturer/inventory', icon: Layers },
-    { name: 'Expiry & Alerts', path: '/manufacturer/expiry-alerts', icon: AlertTriangle },
     { name: 'Notifications', path: '/manufacturer/notifications', icon: Bell },
     { name: 'Company Profile', path: '/manufacturer/profile', icon: Building2 },
     { name: 'Settings', path: '/manufacturer/settings', icon: Settings },

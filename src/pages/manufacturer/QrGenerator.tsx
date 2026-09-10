@@ -3,6 +3,7 @@ import QRCode from 'react-qr-code';
 import { useSearchParams } from 'react-router-dom';
 import { initialMfrBatches } from '../../data/manufacturerData';
 import { Download, Printer, Search, RefreshCw } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const QrGenerator = () => {
   const [searchParams] = useSearchParams();
@@ -107,13 +108,33 @@ EXPIRY DATE: ${batch.expDate}`.trim();
           <div className="p-6 border-b border-slate-200 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-slate-800">Label Preview</h2>
             <div className="flex gap-2">
-              <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium">
+              <button onClick={() => toast.success('QR Code Regenerated')} className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium">
                 <RefreshCw size={16} /> Regenerate QR
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium">
+              <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium">
                 <Printer size={16} /> Print QR
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+              <button onClick={() => {
+                const svg = document.querySelector('#qr-code-svg-container svg');
+                if (svg) {
+                  const svgData = new XMLSerializer().serializeToString(svg);
+                  const canvas = document.createElement('canvas');
+                  const ctx = canvas.getContext('2d');
+                  const img = new Image();
+                  img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx?.drawImage(img, 0, 0);
+                    const pngFile = canvas.toDataURL('image/png');
+                    const downloadLink = document.createElement('a');
+                    downloadLink.download = `QR_${selectedBatch.batchNumber}.png`;
+                    downloadLink.href = `${pngFile}`;
+                    downloadLink.click();
+                    toast.success('QR Code downloaded successfully');
+                  };
+                  img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                }
+              }} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                 <Download size={16} /> Download QR
               </button>
             </div>
@@ -172,14 +193,36 @@ EXPIRY DATE: ${batch.expDate}`.trim();
 
             <div className="bg-white p-8 border-2 border-slate-300 rounded-xl shadow-sm flex flex-col items-center shrink-0 w-full md:w-auto">
               <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-6">Generated QR Code</h3>
-              <div className="bg-white p-2 border-4 border-slate-100 rounded-lg shadow-sm mb-6">
+              <div id="qr-code-svg-container" className="bg-white p-2 border-4 border-slate-100 rounded-lg shadow-sm mb-6">
                 <QRCode value={generateQrPayload(selectedBatch)} size={200} level="H" />
               </div>
               <div className="flex flex-col gap-3 w-full">
-                <button className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium w-full">
+                <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium w-full">
                   <Printer size={16} /> Print QR
                 </button>
-                <button className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium w-full">
+                <button onClick={() => {
+                  const svg = document.querySelector('#qr-code-svg-container svg');
+                  if (svg) {
+                    const svgData = new XMLSerializer().serializeToString(svg);
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = () => {
+                      canvas.width = img.width;
+                      canvas.height = img.height;
+                      ctx?.drawImage(img, 0, 0);
+                      const pngFile = canvas.toDataURL('image/png');
+                      const downloadLink = document.createElement('a');
+                      downloadLink.download = `QR_${selectedBatch.batchNumber}.png`;
+                      downloadLink.href = `${pngFile}`;
+                      downloadLink.click();
+                      toast.success('QR Code downloaded successfully');
+                    };
+                    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+                  } else {
+                    toast.error('Failed to download QR Code');
+                  }
+                }} className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium w-full">
                   <Download size={16} /> Download QR
                 </button>
               </div>
