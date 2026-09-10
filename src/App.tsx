@@ -41,6 +41,7 @@ import MfrNotifications from './pages/manufacturer/Notifications';
 import MfrCompanyProfile from './pages/manufacturer/CompanyProfile';
 import MfrSettings from './pages/manufacturer/Settings';
 
+import EBillView from './pages/EBillView';
 import DistributorReports from './pages/distributor/DistributorReports';
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/e-bill" element={<EBillView />} />
             
             {/* Manufacturer Routes */}
             <Route path="/manufacturer" element={<ProtectedRoute allowedRoles={['manufacturer']} />}>
