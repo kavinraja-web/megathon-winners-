@@ -168,6 +168,7 @@ const EBillView = () => {
             This digital receipt verifies that the medicines purchased have been authenticated via the Pharma Trace system.
           </p>
         </div>
+        </div>
       </div>
     </>
   );
