@@ -1,37 +1,77 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './layouts/Layout';
+import ManufacturerLayout from './layouts/ManufacturerLayout';
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+
+// Regulator / Admin pages
 import Dashboard from './pages/Dashboard';
-import Medicines from './pages/Medicines';
 import Batches from './pages/Batches';
-import QrCodeManagement from './pages/QrCodeManagement';
-import ExpiryMonitor from './pages/ExpiryMonitor';
-import Inventory from './pages/Inventory';
-import Sales from './pages/Sales';
-import Reports from './pages/Reports';
-import Alerts from './pages/Alerts';
-import Settings from './pages/Settings';
+import BatchDetails from './pages/BatchDetails';
 import Scanner from './pages/Scanner';
+import ExpiryAlerts from './pages/ExpiryAlerts';
+import Returns from './pages/Returns';
+import Logistics from './pages/Logistics';
+import Destruction from './pages/Destruction';
+import FraudDetection from './pages/FraudDetection';
+import AuditTrail from './pages/AuditTrail';
+import Analytics from './pages/Analytics';
+
+// Manufacturer pages
+import MfrDashboard from './pages/manufacturer/Dashboard';
+import MfrBatches from './pages/manufacturer/MedicineBatches';
+import MfrAddBatch from './pages/manufacturer/AddBatch';
+import MfrQrGenerator from './pages/manufacturer/QrGenerator';
+import MfrInventoryStock from './pages/manufacturer/InventoryStock';
+import MfrDistribution from './pages/manufacturer/Distribution';
+import MfrScanVerify from './pages/manufacturer/ScanVerify';
+import MfrExpiryAlerts from './pages/manufacturer/ExpiryAlerts';
+import MfrSalesActivity from './pages/manufacturer/SalesActivity';
+import MfrReports from './pages/manufacturer/Reports';
+import MfrNotifications from './pages/manufacturer/Notifications';
+import MfrCompanyProfile from './pages/manufacturer/CompanyProfile';
+import MfrSettings from './pages/manufacturer/Settings';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
         
+        {/* Manufacturer Routes */}
+        <Route path="/manufacturer" element={<ManufacturerLayout />}>
+          <Route index element={<Navigate to="/manufacturer/dashboard" replace />} />
+          <Route path="dashboard" element={<MfrDashboard />} />
+          <Route path="batches" element={<MfrBatches />} />
+          <Route path="add-batch" element={<MfrAddBatch />} />
+          <Route path="qr-generator" element={<MfrQrGenerator />} />
+          <Route path="inventory" element={<MfrInventoryStock />} />
+          <Route path="distribution" element={<MfrDistribution />} />
+          <Route path="scan-verify" element={<MfrScanVerify />} />
+          <Route path="expiry-alerts" element={<MfrExpiryAlerts />} />
+          <Route path="activity" element={<MfrSalesActivity />} />
+          <Route path="reports" element={<MfrReports />} />
+          <Route path="notifications" element={<MfrNotifications />} />
+          <Route path="profile" element={<MfrCompanyProfile />} />
+          <Route path="settings" element={<MfrSettings />} />
+        </Route>
+
+        {/* Existing Pharmacist / Admin Routes */}
         <Route path="/app" element={<Layout />}>
           <Route index element={<Navigate to="/app/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="medicines" element={<Medicines />} />
           <Route path="batches" element={<Batches />} />
-          <Route path="qrcode" element={<QrCodeManagement />} />
-          <Route path="qrcode/scan" element={<Scanner />} />
-          <Route path="expiry" element={<ExpiryMonitor />} />
-          <Route path="inventory" element={<Inventory />} />
-          <Route path="sales" element={<Sales />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="alerts" element={<Alerts />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="batches/:id" element={<BatchDetails />} />
+          <Route path="scanner" element={<Scanner />} />
+          <Route path="expiry" element={<ExpiryAlerts />} />
+          <Route path="returns" element={<Returns />} />
+          <Route path="logistics" element={<Logistics />} />
+          <Route path="destruction" element={<Destruction />} />
+          <Route path="fraud" element={<FraudDetection />} />
+          <Route path="audit" element={<AuditTrail />} />
+          <Route path="analytics" element={<Analytics />} />
         </Route>
       </Routes>
     </BrowserRouter>
