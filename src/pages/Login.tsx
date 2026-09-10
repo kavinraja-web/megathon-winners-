@@ -8,10 +8,8 @@ const Login = () => {
 
   const roles = [
     { id: 'manufacturer', title: 'Manufacturer', desc: 'Brand Owner & Production', icon: Building2 },
-    { id: 'distributor', title: 'Distributor', desc: 'Wholesaler & Logistics', icon: Truck },
-    { id: 'pharmacy', title: 'Pharmacy', desc: 'Medical Shop & Retail', icon: Store },
-    { id: 'facility', title: 'Destruction Facility', desc: 'Authorized Disposal', icon: Trash2 },
-    { id: 'regulator', title: 'Regulator', desc: 'Government & Compliance', icon: Shield },
+    { id: 'distributor', title: 'Dealer', desc: 'Wholesaler & Logistics', icon: Truck },
+    { id: 'pharmacy', title: 'Pharmacist', desc: 'Medical Shop & Retail', icon: Store },
   ];
 
   const handleLogin = (e: React.FormEvent) => {
