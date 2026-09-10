@@ -17,6 +17,8 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
     { name: 'Add Medicine Batch', path: '/manufacturer/add-batch', icon: PlusCircle },
     { name: 'Add Customer', path: '/manufacturer/add-customer', icon: Users },
     { name: 'Reports', path: '/manufacturer/reports', icon: FileText },
+    { name: 'Return Tracking', path: '/manufacturer/returns', icon: Truck },
+
     { name: 'QR / Barcode Generator', path: '/manufacturer/qr-generator', icon: QrCode },
     { name: 'Inventory & Stock', path: '/manufacturer/inventory', icon: Layers },
     { name: 'Notifications', path: '/manufacturer/notifications', icon: Bell },
