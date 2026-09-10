@@ -3,20 +3,22 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Package, PlusCircle, QrCode, 
   Layers, Truck, ScanLine, AlertTriangle, 
-  Activity, BarChart3, Bell, Building2, Settings, User, LogOut, Search, Menu, X
+  Activity, BarChart3, Bell, Building2, Settings, User, LogOut, Search, FileText, Users, Menu, X
 } from 'lucide-react';
-import ExpiryNotificationBanner from '../components/ExpiryNotificationBanner';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: boolean) => void }) => {
   const location = useLocation();
+  const { profile, signOut } = useAuth();
   
   const navItems = [
     { name: 'Dashboard', path: '/manufacturer/dashboard', icon: LayoutDashboard },
     { name: 'Medicine Batches', path: '/manufacturer/batches', icon: Package },
     { name: 'Add Medicine Batch', path: '/manufacturer/add-batch', icon: PlusCircle },
+    { name: 'Add Customer', path: '/manufacturer/add-customer', icon: Users },
+    { name: 'Reports', path: '/manufacturer/reports', icon: FileText },
     { name: 'QR / Barcode Generator', path: '/manufacturer/qr-generator', icon: QrCode },
     { name: 'Inventory & Stock', path: '/manufacturer/inventory', icon: Layers },
-    { name: 'Expiry & Alerts', path: '/manufacturer/expiry-alerts', icon: AlertTriangle },
     { name: 'Notifications', path: '/manufacturer/notifications', icon: Bell },
     { name: 'Company Profile', path: '/manufacturer/profile', icon: Building2 },
     { name: 'Settings', path: '/manufacturer/settings', icon: Settings },
@@ -68,18 +70,21 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
       <div className="mt-auto p-4 fixed bottom-0 w-64 bg-slate-900 border-t border-slate-800">
         <div className="bg-slate-800 rounded-xl p-4 flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
               <User size={16} />
             </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-white truncate">ABC Pharma</p>
-              <p className="text-xs text-slate-400 truncate">Manufacturer</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">{profile?.full_name || 'Manufacturer'}</p>
+              <div className="flex flex-col">
+                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Manufacturer</p>
+                <p className="text-[10px] text-blue-400 font-mono truncate">ID: {profile?.id?.substring(0,8).toUpperCase() || 'UNKNOWN'}</p>
+              </div>
             </div>
           </div>
-          <Link to="/" className="flex items-center justify-center gap-2 text-sm text-red-400 hover:text-red-300 mt-2 py-2 bg-slate-700/50 rounded-lg transition-colors">
+          <button onClick={signOut} className="w-full flex items-center justify-center gap-2 text-sm text-red-400 hover:text-red-300 mt-2 py-2 bg-slate-700/50 rounded-lg transition-colors">
             <LogOut size={16} />
             Logout
-          </Link>
+          </button>
         </div>
       </div>
     </div>
@@ -132,8 +137,7 @@ const ManufacturerLayout = () => {
         />
       )}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-      <div className="md:ml-64 flex-1 flex flex-col relative w-full min-w-0">
-        <ExpiryNotificationBanner />
+      <div className="md:ml-64 flex-1 flex flex-col w-full min-w-0">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
           <Outlet />

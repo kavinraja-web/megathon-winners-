@@ -2,43 +2,36 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Package, QrCode, AlertTriangle, 
-  RefreshCw, Truck, Trash2, ShieldAlert, FileText, 
+  RefreshCw, Truck, FileText, 
   History, BarChart3, Bell, Search, User, LogOut, Menu, X 
 } from 'lucide-react';
-import ExpiryNotificationBanner from '../components/ExpiryNotificationBanner';
+import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: boolean) => void }) => {
   const location = useLocation();
+  const { profile, signOut } = useAuth();
+  
+  const userRole = profile?.role || 'pharmacy';
+  const roleName = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+  const basePath = `/${userRole}`;
   
   const navItems = [
-    { name: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard },
-    { name: 'Medicine Batches', path: '/app/batches', icon: Package },
-    { name: 'QR Scanner', path: '/app/scanner', icon: QrCode },
-    { name: 'Expiry Alerts', path: '/app/expiry', icon: AlertTriangle },
-    { name: 'Return Requests', path: '/app/returns', icon: RefreshCw },
-    { name: 'Reverse Logistics', path: '/app/logistics', icon: Truck },
-    { name: 'Destruction', path: '/app/destruction', icon: Trash2 },
-    { name: 'Fraud Detection', path: '/app/fraud', icon: ShieldAlert },
-    { name: 'Audit Trail', path: '/app/audit', icon: History },
-    { name: 'Billing POS', path: '/app/billing', icon: FileText },
-    { name: 'Analytics', path: '/app/analytics', icon: BarChart3 },
+    { name: 'Dashboard', path: `${basePath}/dashboard`, icon: LayoutDashboard },
+    { name: 'Medicine Batches', path: `${basePath}/batches`, icon: Package },
+    { name: 'QR Scanner', path: `${basePath}/scanner`, icon: QrCode },
+    { name: 'Return Requests', path: `${basePath}/returns`, icon: RefreshCw },
+    { name: 'Reverse Logistics', path: `${basePath}/logistics`, icon: Truck },
+    { name: 'Audit Trail', path: `${basePath}/audit`, icon: History },
+    { name: 'Billing POS', path: `${basePath}/billing`, icon: FileText },
+    { name: 'Analytics', path: `${basePath}/analytics`, icon: BarChart3 },
   ];
-
-  const userRole = localStorage.getItem('USER_ROLE') || 'regulator';
-  const roleName = userRole.charAt(0).toUpperCase() + userRole.slice(1);
 
   const filteredNavItems = navItems.filter(item => {
     if (userRole === 'pharmacy') {
-      return ['Dashboard', 'QR Scanner', 'Billing POS', 'Medicine Batches', 'Return Requests', 'Expiry Alerts'].includes(item.name);
-    }
-    if (userRole === 'manufacturer') {
-      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Reverse Logistics', 'Fraud Detection', 'Analytics'].includes(item.name);
+      return ['Dashboard', 'QR Scanner', 'Billing POS', 'Medicine Batches', 'Return Requests'].includes(item.name);
     }
     if (userRole === 'distributor') {
-      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Reverse Logistics', 'Expiry Alerts'].includes(item.name);
-    }
-    if (userRole === 'facility') {
-      return ['Dashboard', 'QR Scanner', 'Destruction', 'Audit Trail'].includes(item.name);
+      return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Reverse Logistics'].includes(item.name);
     }
     return true;
   });
@@ -89,18 +82,21 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
       <div className="mt-auto p-4">
         <div className="bg-slate-800 rounded-xl p-4 flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
               <User size={16} />
             </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium text-white truncate">{roleName} User</p>
-              <p className="text-xs text-slate-400 truncate">{roleName} Role</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">{profile?.full_name || roleName}</p>
+              <div className="flex flex-col">
+                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{roleName}</p>
+                <p className="text-[10px] text-emerald-400 font-mono truncate">ID: {profile?.id?.substring(0,8).toUpperCase() || 'UNKNOWN'}</p>
+              </div>
             </div>
           </div>
-          <Link to="/" onClick={() => localStorage.removeItem('USER_ROLE')} className="flex items-center justify-center gap-2 text-sm text-red-400 hover:text-red-300 mt-2 py-2 bg-slate-700/50 rounded-lg transition-colors">
+          <button onClick={signOut} className="w-full flex items-center justify-center gap-2 text-sm text-red-400 hover:text-red-300 mt-2 py-2 bg-slate-700/50 rounded-lg transition-colors">
             <LogOut size={16} />
             Logout
-          </Link>
+          </button>
         </div>
       </div>
     </div>
@@ -168,8 +164,7 @@ const Layout = () => {
         />
       )}
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-      <div className="md:ml-64 flex-1 flex flex-col relative w-full min-w-0">
-        <ExpiryNotificationBanner />
+      <div className="md:ml-64 flex-1 flex flex-col w-full min-w-0">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
           <Outlet />

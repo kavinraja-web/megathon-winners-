@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Filter, Eye, Edit, QrCode, Truck } from 'lucide-react';
 import { ManufacturerBatch, initialMfrBatches, updateBatchesBasedOnDate } from '../../data/manufacturerData';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const MedicineBatches = () => {
   const navigate = useNavigate();
@@ -97,14 +98,22 @@ const MedicineBatches = () => {
                   <td className="p-4">{getStatusBadge(batch.status)}</td>
                   <td className="p-4">
                     <div className="flex gap-2">
-                      <button className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded" title="View Details">
+                      <button onClick={() => toast.success('Viewing details for ' + batch.batchNumber)} className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded" title="View Details">
                         <Eye size={16} />
                       </button>
-                      <button className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded" title="Edit">
+                      <button onClick={() => toast.success('Edit mode enabled for ' + batch.batchNumber)} className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded" title="Edit">
                         <Edit size={16} />
                       </button>
                       <button onClick={() => navigate(`/manufacturer/qr-generator?batch=${batch.batchNumber}`)} className="p-1.5 text-slate-400 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded" title="Generate QR">
                         <QrCode size={16} />
+                      </button>
+                      <button onClick={() => {
+                        if(window.confirm('Are you sure you want to delete this batch?')) {
+                          setBatches(batches.filter(b => b.id !== batch.id));
+                          toast.success('Batch deleted successfully');
+                        }
+                      }} className="p-1.5 text-slate-400 hover:text-red-600 bg-slate-100 hover:bg-red-50 rounded" title="Delete">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                       </button>
                     </div>
                   </td>

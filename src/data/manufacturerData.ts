@@ -3,9 +3,7 @@ export type MfrBatchStatus = 'ACTIVE' | 'NEAR EXPIRY' | 'EXPIRED' | 'FULLY DISTR
 export interface ManufacturerBatch {
   id: string; // Internal ID
   tabletId: string;
-  tabletId: "TAB-000000",
-    manufacturer: "ABC Pharmaceuticals Ltd.",
-    batchNumber: string;
+  batchNumber: string;
   medicineName: string;
   genericName: string;
   type: string;
@@ -21,6 +19,23 @@ export interface ManufacturerBatch {
 }
 
 export const initialMfrBatches: ManufacturerBatch[] = [
+  {
+    id: 'MED-TEST-001',
+    tabletId: 'TAB-PAR-0001',
+    manufacturer: 'ABC Pharmaceuticals Ltd.',
+    batchNumber: 'BATCH-PAR-26001',
+    medicineName: 'Paracetamol',
+    genericName: 'Acetaminophen',
+    type: 'Tablet',
+    strength: '500mg',
+    mfgDate: '10/09/2026',
+    expDate: '10/09/2028',
+    mrp: 50,
+    mfgQuantity: 1000,
+    distributedQuantity: 0,
+    remainingQuantity: 1000,
+    status: 'ACTIVE',
+  },
   {
     id: 'MED-000101',
     tabletId: "TAB-000000",
