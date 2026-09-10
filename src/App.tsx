@@ -36,6 +36,10 @@ import MfrNotifications from './pages/manufacturer/Notifications';
 import MfrCompanyProfile from './pages/manufacturer/CompanyProfile';
 import MfrSettings from './pages/manufacturer/Settings';
 
+// Distributor pages
+import DistributorLayout from './layouts/DistributorLayout';
+import DistDashboard from './pages/distributor/Dashboard';
+import DistPharmacyConnect from './pages/distributor/PharmacyConnect';
 function App() {
   return (
     <POSProvider>
@@ -61,6 +65,13 @@ function App() {
             <Route path="notifications" element={<MfrNotifications />} />
             <Route path="profile" element={<MfrCompanyProfile />} />
             <Route path="settings" element={<MfrSettings />} />
+          </Route>
+
+          {/* Distributor Routes */}
+          <Route path="/distributor" element={<DistributorLayout />}>
+            <Route index element={<Navigate to="/distributor/dashboard" replace />} />
+            <Route path="dashboard" element={<DistDashboard />} />
+            <Route path="pharmacy-connect" element={<DistPharmacyConnect />} />
           </Route>
 
           <Route path="/app" element={<Layout />}>

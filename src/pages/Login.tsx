@@ -24,6 +24,8 @@ const Login = () => {
     
     if (roleFromForm === 'manufacturer') {
       navigate('/manufacturer/dashboard');
+    } else if (roleFromForm === 'distributor') {
+      navigate('/distributor/dashboard');
     } else {
       navigate('/app/dashboard');
     }
