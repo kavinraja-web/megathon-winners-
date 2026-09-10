@@ -1,60 +1,64 @@
-import React from 'react';
-import { mockBatches } from '../data/mockData';
-import { RefreshCw, CheckCircle, XCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Package } from 'lucide-react';
+import { getReverseChain, ReverseChainRecord } from '../data/db';
 
 const Returns = () => {
-  const returnRequests = mockBatches.filter(b => b.status === 'Return Requested');
+  const [returns, setReturns] = useState<ReverseChainRecord[]>([]);
+
+  useEffect(() => {
+    // Load returns from the mock database
+    setReturns(getReverseChain().sort((a, b) => b.id.localeCompare(a.id)));
+  }, []);
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-slate-900">Return Requests</h2>
-        <p className="text-slate-500">Manage batches requested for return due to expiry, damage, or recall.</p>
+        <p className="text-slate-500 text-sm">Track your expired medicine returns and reverse logistics.</p>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        {returnRequests.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 flex flex-col items-center">
-            <RefreshCw size={48} className="text-slate-300 mb-4" />
-            <p className="text-lg font-medium">No pending return requests</p>
-          </div>
-        ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
-                <th className="p-4 font-semibold">Batch ID</th>
-                <th className="p-4 font-semibold">Medicine</th>
-                <th className="p-4 font-semibold">Pharmacy / Location</th>
-                <th className="p-4 font-semibold">Reason</th>
-                <th className="p-4 font-semibold text-right">Actions</th>
+      {returns.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm flex flex-col items-center">
+          <Package size={48} className="text-slate-300 mb-4" />
+          <h3 className="text-xl font-bold text-slate-900 mb-2">No Active Returns</h3>
+          <p className="text-slate-500 max-w-md mx-auto">You have not initiated any returns to distributors recently.</p>
+        </div>
+      ) : (
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <table className="w-full text-left text-sm text-slate-600">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold text-xs">
+              <tr>
+                <th className="px-6 py-4">Return ID</th>
+                <th className="px-6 py-4">Batch Number</th>
+                <th className="px-6 py-4">Product</th>
+                <th className="px-6 py-4">Quantity</th>
+                <th className="px-6 py-4">Pharmacy</th>
+                <th className="px-6 py-4">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {returnRequests.map(batch => (
-                <tr key={batch.id} className="hover:bg-slate-50">
-                  <td className="p-4 font-medium text-slate-900">{batch.id}</td>
-                  <td className="p-4">
-                    <p className="font-semibold text-slate-900">{batch.name}</p>
-                    <p className="text-xs text-slate-500">Qty: {batch.quantity}</p>
-                  </td>
-                  <td className="p-4 text-slate-600">{batch.location}</td>
-                  <td className="p-4 text-orange-600 font-medium text-sm">Expired</td>
-                  <td className="p-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button className="text-sm bg-emerald-100 hover:bg-emerald-200 text-emerald-800 px-3 py-1.5 rounded-lg flex items-center gap-1">
-                        <CheckCircle size={16} /> Approve
-                      </button>
-                      <button className="text-sm bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1.5 rounded-lg flex items-center gap-1">
-                        <XCircle size={16} /> Reject
-                      </button>
-                    </div>
+              {returns.map((ret) => (
+                <tr key={ret.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-6 py-4 font-bold font-mono text-slate-900">{ret.id}</td>
+                  <td className="px-6 py-4 font-mono text-slate-600">{ret.batchNumber}</td>
+                  <td className="px-6 py-4 font-medium text-slate-900">{ret.product}</td>
+                  <td className="px-6 py-4 font-bold text-slate-700">{ret.quantity} units</td>
+                  <td className="px-6 py-4">{ret.pharmacy}</td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+                      ret.status.includes('RETURN_REQUESTED') ? 'bg-orange-100 text-orange-700' :
+                      ret.status.includes('TRANSIT') ? 'bg-blue-100 text-blue-700' :
+                      'bg-emerald-100 text-emerald-700'
+                    }`}>
+                      {ret.status.replace('_', ' ')}
+                    </span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

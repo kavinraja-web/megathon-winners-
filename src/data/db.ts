@@ -114,3 +114,4 @@ export const getDestructionRecords = (): DestructionRecord[] => JSON.parse(local
 export const saveBatches = (batches: BatchRecord[]) => localStorage.setItem('PHARMAX_BATCHES', JSON.stringify(batches));
 export const saveBills = (bills: BillRecord[]) => localStorage.setItem('PHARMAX_BILLS', JSON.stringify(bills));
 export const saveReverseChain = (records: ReverseChainRecord[]) => localStorage.setItem('PHARMAX_REVERSE_CHAIN', JSON.stringify(records));
+export const saveProducts = (products: Product[]) => localStorage.setItem('PHARMAX_PRODUCTS', JSON.stringify(products));

@@ -72,7 +72,7 @@ const Batches = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Medicine Batches</h2>
           <p className="text-slate-500 text-sm">Manage and track all registered medicine batches.</p>

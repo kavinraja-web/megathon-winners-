@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
   initDB, getProducts, getBatches, getBills, getReverseChain, 
-  saveBatches, saveBills, saveReverseChain, resetDB,
+  saveBatches, saveBills, saveReverseChain, saveProducts, resetDB,
   Product, BatchRecord, BillRecord, ReverseChainRecord, BillItem 
 } from '../data/db';
 import { differenceInDays, isBefore } from 'date-fns';
@@ -22,6 +22,7 @@ interface POSContextType {
   findProductByBarcode: (barcode: string) => Product | undefined;
   getBatchesForProduct: (productId: string) => BatchRecord[];
   createReturnRequest: (batch: BatchRecord, product: Product) => void;
+  addInventoryItem: (productData: Partial<Product>, batchData: Partial<BatchRecord>) => { product: Product, batch: BatchRecord };
   resetDemoData: () => void;
 }
 
@@ -35,14 +36,49 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
 
   const loadData = () => {
     initDB();
-    setProducts(getProducts());
+    const loadedProducts = getProducts();
+    setProducts(loadedProducts);
     
     // Calculate fresh status for active batches
     const rawBatches = getBatches();
+    const reverseChain = getReverseChain();
+    let madeChanges = false;
+    let autoReturns = 0;
+    
     const updatedBatches = rawBatches.map(b => {
       if (b.status === 'PERMANENTLY_CLOSED' || b.status === 'RETURN_REQUESTED') return b;
-      return { ...b, status: calculateExpiryStatus(b.expiryDate) };
+      
+      const newStatus = calculateExpiryStatus(b.expiryDate);
+      if (newStatus === 'EXPIRED') {
+        // Automatically create return request
+        const product = loadedProducts.find(p => p.id === b.productId);
+        if (product) {
+          const newRecord: ReverseChainRecord = {
+            id: `RC${String(Date.now()).slice(-4)}-AUTO`,
+            batchId: b.id,
+            batchNumber: b.batchNumber,
+            product: product.name,
+            quantity: b.quantity,
+            pharmacy: 'PharmaX Demo Pharmacy',
+            status: 'RETURN_REQUESTED'
+          };
+          reverseChain.push(newRecord);
+          madeChanges = true;
+          autoReturns++;
+          return { ...b, status: 'RETURN_REQUESTED' };
+        }
+      }
+      return { ...b, status: newStatus };
     });
+
+    if (madeChanges) {
+      saveReverseChain(reverseChain);
+      saveBatches(updatedBatches);
+      if (autoReturns > 0) {
+        setTimeout(() => toast.error(`${autoReturns} expired batch(es) automatically returned to distributor!`), 1000);
+      }
+    }
+
     setBatches(updatedBatches);
     setBills(getBills());
   };
@@ -221,12 +257,52 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
     toast.success('Return Request Created Successfully');
   };
 
+  const addInventoryItem = (productData: Partial<Product>, batchData: Partial<BatchRecord>) => {
+    let product = products.find(p => p.name === productData.name || (productData.barcode && p.barcode === productData.barcode));
+    
+    let updatedProducts = [...products];
+    if (!product) {
+      product = {
+        id: `P${String(Date.now()).slice(-4)}`,
+        name: productData.name || 'Unknown',
+        genericName: productData.genericName || 'Unknown',
+        manufacturer: productData.manufacturer || 'Unknown',
+        category: productData.category || 'Medicine',
+        barcode: productData.barcode || `BC-${Date.now()}`
+      };
+      updatedProducts = [...products, product];
+      setProducts(updatedProducts);
+      saveProducts(updatedProducts);
+    }
+
+    const batch: BatchRecord = {
+      id: `B${String(Date.now()).slice(-4)}`,
+      productId: product.id,
+      batchNumber: batchData.batchNumber || `BN-${Date.now()}`,
+      manufacturingDate: batchData.manufacturingDate || new Date().toISOString(),
+      expiryDate: batchData.expiryDate || new Date().toISOString(),
+      quantity: batchData.quantity || 0,
+      mrp: batchData.mrp || 0,
+      purchasePrice: batchData.purchasePrice || 0,
+      sellingPrice: batchData.sellingPrice || 0,
+      supplier: batchData.supplier || 'Direct',
+      status: calculateExpiryStatus(batchData.expiryDate || new Date().toISOString())
+    };
+
+    const newBatches = [...batches, batch];
+    setBatches(newBatches);
+    saveBatches(newBatches);
+    
+    toast.success('Product and Batch added to inventory successfully');
+    return { product, batch };
+  };
+
   return (
     <POSContext.Provider value={{
       products, batches, bills, currentBill,
       addToBill, removeFromBill, updateQuantity, clearBill, generateBill,
       checkExpiryStatus: calculateExpiryStatus, calculateDaysRemaining,
-      findProductByBarcode, getBatchesForProduct, createReturnRequest, resetDemoData
+      findProductByBarcode, getBatchesForProduct, createReturnRequest, addInventoryItem, resetDemoData
     }}>
       {children}
     </POSContext.Provider>
