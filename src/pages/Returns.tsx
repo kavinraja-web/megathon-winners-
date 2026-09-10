@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, CheckCircle, Clock, Package } from 'lucide-react';
-import { getReverseChain, ReverseRecord } from '../data/db';
+import { getReverseChain, ReverseChainRecord } from '../data/db';
 
 const Returns = () => {
-  const [returns, setReturns] = useState<ReverseRecord[]>([]);
+  const [returns, setReturns] = useState<ReverseChainRecord[]>([]);
 
   useEffect(() => {
     // Load returns from the mock database
-    setReturns(getReverseChain().sort((a, b) => new Date(b.initiatedAt).getTime() - new Date(a.initiatedAt).getTime()));
+    setReturns(getReverseChain().sort((a, b) => b.id.localeCompare(a.id)));
   }, []);
 
   return (
@@ -28,34 +28,28 @@ const Returns = () => {
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-semibold text-xs">
               <tr>
-                <th className="px-6 py-4">Return ID / Date</th>
+                <th className="px-6 py-4">Return ID</th>
                 <th className="px-6 py-4">Batch Number</th>
                 <th className="px-6 py-4">Product</th>
                 <th className="px-6 py-4">Quantity</th>
-                <th className="px-6 py-4">Return To</th>
+                <th className="px-6 py-4">Pharmacy</th>
                 <th className="px-6 py-4">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {returns.map((ret) => (
                 <tr key={ret.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <p className="font-bold font-mono text-slate-900">{ret.id}</p>
-                    <p className="text-xs text-slate-500">{new Date(ret.initiatedAt).toLocaleDateString()}</p>
-                  </td>
+                  <td className="px-6 py-4 font-bold font-mono text-slate-900">{ret.id}</td>
                   <td className="px-6 py-4 font-mono text-slate-600">{ret.batchNumber}</td>
-                  <td className="px-6 py-4 font-medium text-slate-900">{ret.productName}</td>
+                  <td className="px-6 py-4 font-medium text-slate-900">{ret.product}</td>
                   <td className="px-6 py-4 font-bold text-slate-700">{ret.quantity} units</td>
-                  <td className="px-6 py-4">{ret.toEntity}</td>
+                  <td className="px-6 py-4">{ret.pharmacy}</td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                      ret.status === 'PENDING_PICKUP' ? 'bg-orange-100 text-orange-700' :
-                      ret.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-700' :
+                      ret.status.includes('RETURN_REQUESTED') ? 'bg-orange-100 text-orange-700' :
+                      ret.status.includes('TRANSIT') ? 'bg-blue-100 text-blue-700' :
                       'bg-emerald-100 text-emerald-700'
                     }`}>
-                      {ret.status === 'PENDING_PICKUP' && <Clock size={12} />}
-                      {ret.status === 'IN_TRANSIT' && <Truck size={12} />}
-                      {ret.status === 'DELIVERED' && <CheckCircle size={12} />}
                       {ret.status.replace('_', ' ')}
                     </span>
                   </td>
