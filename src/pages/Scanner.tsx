@@ -368,17 +368,11 @@ const Scanner = () => {
                     <div>
                       <p className="font-bold">AUTOMATIC RETURN INITIATED</p>
                       <p className="text-sm">A return message for this expired batch has been sent automatically to the distributor.</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {scanState === 'success' && !mismatch && systemBatch && (
-                <div className="flex items-center gap-3 text-emerald-800 bg-emerald-50 p-4 rounded-xl border border-emerald-200 mt-4">
-                  <CheckCircle size={32} className="shrink-0" />
+                <div className="flex items-center gap-3 text-red-800 bg-red-50 p-4 rounded-xl border border-red-200 mt-6">
+                  <XCircle size={32} className="shrink-0" />
                   <div>
-                    <p className="font-bold text-lg">🟢 MEDICINE VALID</p>
-                    <p className="text-sm">Ready for pharmacy workflow.</p>
+                    <p className="font-bold text-lg">MEDICINE IS EXPIRED!</p>
+                    <p className="text-sm">A notification has been sent to the manufacturer automatically.</p>
                   </div>
                 </div>
               )}

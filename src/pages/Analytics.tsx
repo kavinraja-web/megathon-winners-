@@ -127,21 +127,6 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
           </div>
 
           <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">Gemini API Key</label>
-              <div className="relative">
-                <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input 
-                  type="password"
-                  placeholder="AIzaSy..."
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
-                />
-              </div>
-              <p className="text-xs text-slate-500 mt-2">Required to use AI features. Key is used locally and not saved on any external servers.</p>
-            </div>
-
             <button
               onClick={generateAIReport}
               disabled={isGenerating || !apiKey}
