@@ -97,14 +97,14 @@ const AddCustomer = () => {
                       type="text" 
                       value={cust.id} 
                       onChange={(e) => updateCell(idx, 'id', e.target.value)}
-                      className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-2 py-1 outline-none transition-colors"
+                      className="w-full bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-md px-3 py-1.5 outline-none shadow-sm transition-colors"
                     />
                   </td>
                   <td className="px-4 py-2">
                     <select
                       value={cust.type}
                       onChange={(e) => updateCell(idx, 'type', e.target.value as any)}
-                      className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-2 py-1 outline-none transition-colors"
+                      className="w-full bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-md px-3 py-1.5 outline-none shadow-sm transition-colors"
                     >
                       <option value="Distributor">Distributor</option>
                       <option value="Pharmacy">Pharmacy</option>
@@ -116,7 +116,7 @@ const AddCustomer = () => {
                       value={cust.name} 
                       placeholder="e.g. Global Pharma"
                       onChange={(e) => updateCell(idx, 'name', e.target.value)}
-                      className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-2 py-1 outline-none transition-colors"
+                      className="w-full bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-md px-3 py-1.5 outline-none shadow-sm transition-colors"
                     />
                   </td>
                   <td className="px-4 py-2">
@@ -125,7 +125,7 @@ const AddCustomer = () => {
                       value={cust.contact} 
                       placeholder="e.g. Jane Doe"
                       onChange={(e) => updateCell(idx, 'contact', e.target.value)}
-                      className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-2 py-1 outline-none transition-colors"
+                      className="w-full bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-md px-3 py-1.5 outline-none shadow-sm transition-colors"
                     />
                   </td>
                   <td className="px-4 py-2">
@@ -134,7 +134,7 @@ const AddCustomer = () => {
                       value={cust.email} 
                       placeholder="email@example.com"
                       onChange={(e) => updateCell(idx, 'email', e.target.value)}
-                      className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-2 py-1 outline-none transition-colors"
+                      className="w-full bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-md px-3 py-1.5 outline-none shadow-sm transition-colors"
                     />
                   </td>
                   <td className="px-4 py-2">
@@ -143,7 +143,7 @@ const AddCustomer = () => {
                       value={cust.phone} 
                       placeholder="+1 234 567 890"
                       onChange={(e) => updateCell(idx, 'phone', e.target.value)}
-                      className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-2 py-1 outline-none transition-colors"
+                      className="w-full bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-md px-3 py-1.5 outline-none shadow-sm transition-colors"
                     />
                   </td>
                   <td className="px-4 py-2">
@@ -152,7 +152,7 @@ const AddCustomer = () => {
                       value={cust.location} 
                       placeholder="City, Country"
                       onChange={(e) => updateCell(idx, 'location', e.target.value)}
-                      className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-2 py-1 outline-none transition-colors"
+                      className="w-full bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-md px-3 py-1.5 outline-none shadow-sm transition-colors"
                     />
                   </td>
                   <td className="px-4 py-2 text-center">
