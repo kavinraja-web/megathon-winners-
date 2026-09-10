@@ -1,42 +1,37 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './layouts/Layout';
-import Landing from './pages/Landing';
-import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Medicines from './pages/Medicines';
 import Batches from './pages/Batches';
-import BatchDetails from './pages/BatchDetails';
+import QrCodeManagement from './pages/QrCodeManagement';
+import ExpiryMonitor from './pages/ExpiryMonitor';
+import Inventory from './pages/Inventory';
+import Sales from './pages/Sales';
+import Reports from './pages/Reports';
+import Alerts from './pages/Alerts';
+import Settings from './pages/Settings';
 import Scanner from './pages/Scanner';
-import ExpiryAlerts from './pages/ExpiryAlerts';
-import Returns from './pages/Returns';
-import Logistics from './pages/Logistics';
-import Destruction from './pages/Destruction';
-import FraudDetection from './pages/FraudDetection';
-import AuditTrail from './pages/AuditTrail';
-import Analytics from './pages/Analytics';
-import PharmacyReceipt from './pages/PharmacyReceipt';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
         
         <Route path="/app" element={<Layout />}>
           <Route index element={<Navigate to="/app/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="medicines" element={<Medicines />} />
           <Route path="batches" element={<Batches />} />
-          <Route path="batches/:id" element={<BatchDetails />} />
-          <Route path="scanner" element={<Scanner />} />
-          <Route path="receipt-scanner" element={<PharmacyReceipt />} />
-          <Route path="expiry" element={<ExpiryAlerts />} />
-          <Route path="returns" element={<Returns />} />
-          <Route path="logistics" element={<Logistics />} />
-          <Route path="destruction" element={<Destruction />} />
-          <Route path="fraud" element={<FraudDetection />} />
-          <Route path="audit" element={<AuditTrail />} />
-          <Route path="analytics" element={<Analytics />} />
+          <Route path="qrcode" element={<QrCodeManagement />} />
+          <Route path="qrcode/scan" element={<Scanner />} />
+          <Route path="expiry" element={<ExpiryMonitor />} />
+          <Route path="inventory" element={<Inventory />} />
+          <Route path="sales" element={<Sales />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="alerts" element={<Alerts />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>
