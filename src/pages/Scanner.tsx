@@ -352,12 +352,8 @@ const Scanner = () => {
                   )}
                 </>
               ) : (
-                <div className="flex items-center gap-3 text-slate-700 bg-slate-100 p-4 rounded-xl border border-slate-200">
-                  <Info size={24} className="shrink-0" />
-                  <div>
-                    <p className="font-bold">UNKNOWN BATCH</p>
-                    <p className="text-sm">This batch was not found in the system database.</p>
-                  </div>
+                <div className="hidden">
+                  {/* Unknown batch block removed as requested */}
                 </div>
               )}
               

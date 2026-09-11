@@ -87,7 +87,8 @@ const ScanVerify = () => {
       setError('');
     } else {
       setResult(null);
-      setError('Invalid QR or Unknown Batch ID. Medicine not found in system.');
+      // Error hidden as requested
+      // setError('Invalid QR or Unknown Batch ID. Medicine not found in system.');
     }
   };
 

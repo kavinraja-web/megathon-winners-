@@ -74,9 +74,6 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
     if (madeChanges) {
       saveReverseChain(reverseChain);
       saveBatches(updatedBatches);
-      if (autoReturns > 0) {
-        setTimeout(() => toast.error(`${autoReturns} expired batch(es) automatically returned to distributor!`), 1000);
-      }
     }
 
     setBatches(updatedBatches);
@@ -313,7 +310,7 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
       };
       const reverseChain = getReverseChain();
       saveReverseChain([...reverseChain, newRecord]);
-      toast.error('Product is already expired! Automatic return message sent to distributor.', { duration: 6000 });
+      toast.success('Product is already expired. Auto-returned to distributor.');
     } else {
       toast.success('Product and Batch added to inventory successfully');
     }
