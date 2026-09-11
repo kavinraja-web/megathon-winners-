@@ -107,14 +107,14 @@ const Analytics = () => {
           });
         });
         const topMed = Object.entries(medSales).sort((a, b) => b[1] - a[1])[0];
-        const topMedText = topMed ? \`\${topMed[0]} (\${topMed[1]} units)\` : 'No sales data available';
+        const topMedText = topMed ? `${topMed[0]} (${topMed[1]} units)` : 'No sales data available';
 
         const hasSufficientData = bills.length > 0 || batches.length > 0;
 
         let generatedHtml = '';
 
         if (!hasSufficientData) {
-          generatedHtml = \`
+          generatedHtml = `
             <h1>Pharma Trace Pharmacy Intelligence Report</h1>
             <h2>Data Insufficient</h2>
             <p>There is currently insufficient data to generate a complete report. The system requires active inventory batches or recorded sales to perform analysis.</p>
@@ -124,54 +124,54 @@ const Analytics = () => {
               <li>Process sales transactions using the Billing POS.</li>
               <li>Allow time for stock movement data to accumulate.</li>
             </ul>
-          \`;
+          `;
         } else {
-          generatedHtml = \`
+          generatedHtml = `
             <h1>Pharma Trace Pharmacy Intelligence Report</h1>
             
             <h2>1. Executive Summary</h2>
-            <p>Overall pharmacy status indicates \${stockUnits > 0 ? 'active' : 'dormant'} operations with a current inventory of <strong>\${stockUnits}</strong> units across <strong>\${batches.length}</strong> tracked batches. Total recorded revenue stands at <strong>₹\${totalSalesVal.toLocaleString()}</strong>.</p>
+            <p>Overall pharmacy status indicates ${stockUnits > 0 ? 'active' : 'dormant'} operations with a current inventory of <strong>${stockUnits}</strong> units across <strong>${batches.length}</strong> tracked batches. Total recorded revenue stands at <strong>₹${totalSalesVal.toLocaleString()}</strong>.</p>
             
             <h2>2. Sales Analysis</h2>
             <ul>
-              <li><strong>Total Bills Generated:</strong> \${bills.length}</li>
-              <li><strong>Total Revenue:</strong> ₹\${totalSalesVal.toLocaleString()}</li>
-              <li><strong>Top-selling Medicine:</strong> \${topMedText}</li>
-              <li><strong>Sales Trends:</strong> \${bills.length > 0 ? 'Consistent sales velocity based on recorded transactions.' : 'No active sales trends recorded.'}</li>
+              <li><strong>Total Bills Generated:</strong> ${bills.length}</li>
+              <li><strong>Total Revenue:</strong> ₹${totalSalesVal.toLocaleString()}</li>
+              <li><strong>Top-selling Medicine:</strong> ${topMedText}</li>
+              <li><strong>Sales Trends:</strong> ${bills.length > 0 ? 'Consistent sales velocity based on recorded transactions.' : 'No active sales trends recorded.'}</li>
             </ul>
 
             <h2>3. Inventory Analysis</h2>
             <ul>
-              <li><strong>Total Stock Units:</strong> \${stockUnits}</li>
-              <li><strong>Active Batches:</strong> \${activeBatches.length}</li>
-              <li><strong>Low-stock Risk:</strong> \${stockUnits < 50 ? 'High (Replenishment recommended)' : 'Normal'}</li>
-              <li><strong>Stock Movement:</strong> \${bills.length > 10 ? 'High velocity' : 'Standard velocity'}</li>
+              <li><strong>Total Stock Units:</strong> ${stockUnits}</li>
+              <li><strong>Active Batches:</strong> ${activeBatches.length}</li>
+              <li><strong>Low-stock Risk:</strong> ${stockUnits < 50 ? 'High (Replenishment recommended)' : 'Normal'}</li>
+              <li><strong>Stock Movement:</strong> ${bills.length > 10 ? 'High velocity' : 'Standard velocity'}</li>
             </ul>
 
             <h2>4. Expiry Risk Analysis</h2>
             <ul>
-              <li><strong>Expired Batches:</strong> \${realExpiredBatches.length}</li>
-              <li><strong>Near-expiry & Critical Batches:</strong> \${expiringSoonCount}</li>
-              <li><strong>High-risk Inventory:</strong> \${expiringSoonCount > 0 ? 'Attention required for upcoming expirations.' : 'No immediate expiration risks.'}</li>
-              <li><strong>Recommended Actions:</strong> \${expiringSoonCount > 0 ? 'Implement First-Expiry-First-Out (FEFO) dispensing strictly.' : 'Continue standard operations.'}</li>
+              <li><strong>Expired Batches:</strong> ${realExpiredBatches.length}</li>
+              <li><strong>Near-expiry & Critical Batches:</strong> ${expiringSoonCount}</li>
+              <li><strong>High-risk Inventory:</strong> ${expiringSoonCount > 0 ? 'Attention required for upcoming expirations.' : 'No immediate expiration risks.'}</li>
+              <li><strong>Recommended Actions:</strong> ${expiringSoonCount > 0 ? 'Implement First-Expiry-First-Out (FEFO) dispensing strictly.' : 'Continue standard operations.'}</li>
             </ul>
 
             <h2>5. Reverse Logistics</h2>
             <ul>
-              <li><strong>Pending Return Requests:</strong> \${(reverseChain || []).filter(r => r.status === 'RETURN_REQUESTED').length}</li>
-              <li><strong>Expired Medicines Awaiting Collection:</strong> \${realExpiredBatches.length}</li>
-              <li><strong>Reverse-chain Status:</strong> \${(reverseChain && reverseChain.length > 0) ? 'Active reverse logistics operations recorded.' : 'No reverse logistics data available.'}</li>
+              <li><strong>Pending Return Requests:</strong> ${(reverseChain || []).filter(r => r.status === 'RETURN_REQUESTED').length}</li>
+              <li><strong>Expired Medicines Awaiting Collection:</strong> ${realExpiredBatches.length}</li>
+              <li><strong>Reverse-chain Status:</strong> ${(reverseChain && reverseChain.length > 0) ? 'Active reverse logistics operations recorded.' : 'No reverse logistics data available.'}</li>
             </ul>
 
             <h2>6. Recommendations</h2>
             <p>Based on current system data, we recommend the following actionable steps:</p>
             <ul>
-              \${expiringSoonCount > 0 ? '<li><strong>Urgent:</strong> Isolate and heavily discount near-expiry batches to prevent loss.</li>' : ''}
-              \${realExpiredBatches.length > 0 ? '<li><strong>Compliance:</strong> Initiate automated reverse-chain procedures for the ' + realExpiredBatches.length + ' expired batches immediately.</li>' : ''}
-              \${stockUnits < 50 ? '<li><strong>Restock:</strong> Contact distributors for inventory replenishment to prevent stockouts.</li>' : ''}
-              <li><strong>Sales Strategy:</strong> Monitor top-selling items like \${topMedText.split(' ')[0]} to maintain optimal buffer stock.</li>
+              ${expiringSoonCount > 0 ? '<li><strong>Urgent:</strong> Isolate and heavily discount near-expiry batches to prevent loss.</li>' : ''}
+              ${realExpiredBatches.length > 0 ? '<li><strong>Compliance:</strong> Initiate automated reverse-chain procedures for the ' + realExpiredBatches.length + ' expired batches immediately.</li>' : ''}
+              ${stockUnits < 50 ? '<li><strong>Restock:</strong> Contact distributors for inventory replenishment to prevent stockouts.</li>' : ''}
+              <li><strong>Sales Strategy:</strong> Monitor top-selling items like ${topMedText.split(' ')[0]} to maintain optimal buffer stock.</li>
             </ul>
-          \`;
+          `;
         }
 
         setReportData(generatedHtml);
@@ -186,7 +186,7 @@ const Analytics = () => {
 
   const handleDownload = () => {
     if (!reportData) return;
-    downloadReport(reportData, \`PharmaTrace_Report_\${new Date().toISOString().split('T')[0]}.html\`);
+    downloadReport(reportData, `PharmaTrace_Report_${new Date().toISOString().split('T')[0]}.html`);
   };
 
   const handlePrint = () => {
