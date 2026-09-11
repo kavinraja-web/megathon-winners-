@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { QrCode, Search, ShieldAlert, CheckCircle, AlertTriangle, Camera, Info, XCircle } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { getMfrBatches } from '../data/manufacturerData';
+import { supabase } from '../lib/supabase';
 
 const Scanner = () => {
-  const [scanState, setScanState] = useState<'idle' | 'scanning' | 'success' | 'fraud' | 'expired' | 'invalid'>('idle');
+  const [scanState, setScanState] = useState<'idle' | 'scanning' | 'success' | 'fraud' | 'expired' | 'invalid' | 'destroyed'>('idle');
   const [batchId, setBatchId] = useState('');
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [rawPayload, setRawPayload] = useState('');
@@ -60,12 +61,12 @@ const Scanner = () => {
     return data;
   };
 
-  const triggerScanLogic = (text: string) => {
+    const triggerScanLogic = (text: string) => {
     if (!text) return;
     setRawPayload(text);
     setScanState('scanning');
     
-    setTimeout(() => {
+    setTimeout(async () => {
       const parsed = parseQrData(text);
       if (!parsed['MEDICINE'] || !parsed['BATCH NUMBER']) {
         setScanState('invalid');
@@ -76,6 +77,23 @@ const Scanner = () => {
       const batchNo = parsed['BATCH NUMBER'];
       setBatchId(batchNo);
       
+      // Check for DESTROYED re-entry
+      try {
+        const { data: destReturns } = await supabase
+          .from('returns')
+          .select('status')
+          .eq('batch_number', batchNo)
+          .in('status', ['DESTROYED', 'CLOSED'])
+          .limit(1);
+          
+        if (destReturns && destReturns.length > 0) {
+          setScanState('destroyed');
+          return;
+        }
+      } catch (e) {
+        console.error('Error checking destroyed status', e);
+      }
+
       const found = getMfrBatches().find(b => b.batchNumber === batchNo);
       setSystemBatch(found);
       
@@ -89,16 +107,13 @@ const Scanner = () => {
         let expDateStr = parsed['EXPIRY DATE'];
         let expDateObj = new Date(expDateStr);
         
-        // Handle DD/MM/YYYY or MM/DD/YYYY by explicitly converting to YYYY-MM-DD if we see slashes
         if (expDateStr.includes('/')) {
            const parts = expDateStr.split('/');
            if (parts.length === 3) {
-             // Assuming DD/MM/YYYY
              expDateObj = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
            }
         } else if (expDateStr.includes('-')) {
            const parts = expDateStr.split('-');
-           // Handle DD-MM-YYYY format
            if (parts.length === 3 && parts[0].length === 2 && parts[2].length === 4) {
              expDateObj = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
            } else {
@@ -108,27 +123,6 @@ const Scanner = () => {
         
         if (!isNaN(expDateObj.getTime()) && expDateObj < new Date()) {
           setScanState('expired');
-          
-          // Actually push to reverse chain to simulate the automated system action
-          try {
-            const currentChainStr = localStorage.getItem('PHARMAX_REVERSE_CHAIN') || '[]';
-            const reverseChain = JSON.parse(currentChainStr);
-            const exists = reverseChain.find((r: any) => r.batchNumber === batchNo);
-            if (!exists) {
-              reverseChain.push({
-                id: `RC${String(Date.now()).slice(-4)}-AUTO-SCAN`,
-                batchId: `B-AUTO-${batchNo}`,
-                batchNumber: batchNo,
-                product: parsed['MEDICINE'] || 'Unknown Product',
-                quantity: 1, // Placeholder
-                pharmacy: 'PharmaX Demo Pharmacy',
-                status: 'RETURN_REQUESTED'
-              });
-              localStorage.setItem('PHARMAX_REVERSE_CHAIN', JSON.stringify(reverseChain));
-            }
-          } catch (e) {
-            console.error('Could not auto-return:', e);
-          }
           return;
         }
       }
@@ -262,7 +256,7 @@ const Scanner = () => {
         </div>
       )}
 
-      {(scanState === 'success' || scanState === 'expired') && parsedData && (
+      {(scanState === 'success' || scanState === 'expired' || scanState === 'destroyed') && parsedData && (
         <div className="space-y-6">
           <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
             <div className="bg-slate-50 border-b border-slate-200 p-6 flex items-center gap-3">
@@ -357,6 +351,20 @@ const Scanner = () => {
                 </div>
               )}
               
+              
+              {scanState === 'destroyed' && (
+                <div className="flex flex-col gap-2 mt-4">
+                  <div className="flex items-center gap-3 text-red-800 bg-red-50 p-4 rounded-xl border border-red-300 shadow-sm">
+                    <ShieldAlert size={32} className="shrink-0 text-red-600" />
+                    <div>
+                      <p className="font-bold text-lg">⚠️ RE-ENTRY DETECTED</p>
+                      <p className="font-bold">🚫 SALE BLOCKED</p>
+                      <p className="text-sm">This batch has already completed the return/destruction process and must not be sold.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {scanState === 'expired' && (
                 <div className="flex flex-col gap-2 mt-4">
                   <div className="flex items-center gap-3 text-red-800 bg-red-50 p-4 rounded-xl border border-red-200">

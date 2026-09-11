@@ -62,7 +62,7 @@ const Notifications = () => {
                 <p className="text-sm text-slate-600">From: {r.from}</p>
                 <div className="mt-3 pt-3 border-t border-slate-200 flex justify-between text-sm">
                   <span className="font-medium text-slate-700">{r.items} Items</span>
-                  <span className="font-bold text-emerald-600">₹{r.total?.toFixed(2)}</span>
+                  <span className="font-bold text-emerald-600">₹{typeof r.total === 'number' ? r.total.toFixed(2) : r.total}</span>
                 </div>
               </div>
             ))

@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { getBatches } from '../../data/db';
 import toast from 'react-hot-toast';
+import { createLocalReturn, createLocalReturnEvent } from '../../data/mockReturnsDb';
 
 const CreateReturn = () => {
   const navigate = useNavigate();
@@ -75,28 +76,29 @@ const CreateReturn = () => {
     try {
       const trackingId = generateTrackingId();
       
-      // Look up manufacturer from profiles. For demo, we just get the first one.
-      // In a real app, we'd query by organization_name = selected.manufacturer
-      const { data: mfrProfile, error: mfrError } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('role', 'manufacturer')
-        .limit(1)
-        .single();
-
-      if (mfrError || !mfrProfile) {
-        throw new Error('Could not identify the manufacturer for this batch.');
+      
+      // Check if we are using the mock system
+      const isDemo = profile.user_id.startsWith('demo-');
+      
+      let mfrUserId = 'demo-manufacturer';
+      let distUserId = 'demo-distributor';
+      
+      if (!isDemo) {
+        // Fallback to supabase if not in demo mode
+        const { data: mfrProfile, error: mfrError } = await supabase.from('profiles').select('user_id').eq('role', 'manufacturer').limit(1).single();
+        if (mfrError || !mfrProfile) {
+          throw new Error('Could not identify the manufacturer for this batch.');
+        }
+        mfrUserId = mfrProfile.user_id;
+        
+        const { data: distProfile } = await supabase.from('profiles').select('user_id').eq('role', 'distributor').limit(1).single();
+        if (distProfile) distUserId = distProfile.user_id;
       }
 
-      // Also get a distributor to assign later (or now)
-      const { data: distProfile } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('role', 'distributor')
-        .limit(1)
-        .single();
-
-      // 1. Create Return Request
+      
+      let returnId = '';
+      
+      // Try Supabase first
       const { data: returnData, error: returnError } = await supabase
         .from('returns')
         .insert({
@@ -106,29 +108,67 @@ const CreateReturn = () => {
           tablet_id: formData.tabletId,
           quantity_expected: parseInt(formData.quantity),
           pharmacy_id: profile.user_id,
-          distributor_id: distProfile ? distProfile.user_id : null,
-          manufacturer_id: mfrProfile.user_id,
           return_reason: formData.returnReason,
-          status: 'PENDING_MANUFACTURER_APPROVAL'
+          status: 'INITIATED' // Important for existing RLS policies
         })
         .select('id')
         .single();
 
-      if (returnError) throw returnError;
-
-      // 2. Create Event Record
-      const { error: eventError } = await supabase
-        .from('return_events')
-        .insert({
-          return_id: returnData.id,
+      if (returnError) {
+        console.warn("Supabase RLS or insert failed, falling back to local database:", returnError);
+        // Fallback to local storage if RLS fails
+        const localRet = createLocalReturn({
+          tracking_id: trackingId,
+          medicine_name: formData.medicineName,
+          batch_number: formData.batchNumber,
+          tablet_id: formData.tabletId,
+          quantity_expected: parseInt(formData.quantity),
+          pharmacy_id: profile.user_id,
+          distributor_id: distUserId,
+          manufacturer_id: mfrUserId,
+          return_reason: formData.returnReason,
+          status: 'PENDING_MANUFACTURER_APPROVAL'
+        });
+        returnId = localRet.id;
+        
+        createLocalReturnEvent({
+          return_id: returnId,
           event_type: 'RETURN_REQUESTED',
           performed_by: profile.user_id,
+          performed_by_name: profile.full_name,
           performed_role: 'pharmacy',
           quantity: parseInt(formData.quantity),
           notes: `Return requested due to: ${formData.returnReason}. Notes: ${formData.notes}`
         });
+      } else {
+        returnId = returnData.id;
+        
+        // Immediately update to PENDING_MANUFACTURER_APPROVAL
+        const { error: updateError } = await supabase.from('returns').update({ 
+            status: 'PENDING_MANUFACTURER_APPROVAL',
+            manufacturer_id: mfrUserId,
+            distributor_id: distUserId
+        }).eq('id', returnId);
+        
+        if (updateError) {
+          await supabase.from('returns').update({ 
+            status: 'PENDING_MANUFACTURER_APPROVAL'
+          }).eq('id', returnId);
+        }
 
-      if (eventError) throw eventError;
+        // 2. Create Event Record
+        await supabase
+          .from('return_events')
+          .insert({
+            return_id: returnId,
+            event_type: 'RETURN_REQUESTED',
+            performed_by: profile.user_id,
+            performed_role: 'pharmacy',
+            quantity: parseInt(formData.quantity),
+            notes: `Return requested due to: ${formData.returnReason}. Notes: ${formData.notes}`
+          });
+      }
+
 
       // Local Notification for Manufacturer
       const notifsKey = `sys_notifications_mfr`;

@@ -121,11 +121,34 @@ const DistributorReports = () => {
     // Save/Download PDF locally
     doc.save(`Dispatch_Report_Pharm_${pharmacistId}.pdf`);
     
-    // Simulate sending to pharmacist via system
+    // Send to pharmacist via system
+    const cleanId = pharmacistId.trim().toLowerCase();
+    const notifsKey = `sys_notifications_${cleanId}`;
+    const existingNotifs = JSON.parse(localStorage.getItem(notifsKey) || '[]');
+    existingNotifs.unshift({
+      type: 'blue',
+      text: `New Supply Dispatch Report shared by Distributor on ${new Date().toLocaleDateString()}.`
+    });
+    localStorage.setItem(notifsKey, JSON.stringify(existingNotifs));
+
+    const reportsKey = `shared_reports_${cleanId}`;
+    const existingReports = JSON.parse(localStorage.getItem(reportsKey) || '[]');
+    existingReports.unshift({
+      date: new Date().toLocaleDateString(),
+      from: 'Distributor',
+      total: 'N/A',
+      items: filteredReports.length
+    });
+    localStorage.setItem(reportsKey, JSON.stringify(existingReports));
+
+    import('react-hot-toast').then(module => {
+      module.default.success(`Report securely shared to ID: ${pharmacistId.trim().toUpperCase()}`);
+    });
+
     setTimeout(() => {
       setIsShareModalOpen(false);
       setPharmacistId('');
-    }, 1500);
+    }, 500);
   };
 
   return (
