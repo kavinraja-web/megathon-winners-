@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Eye, Edit, QrCode, Truck } from 'lucide-react';
-import { ManufacturerBatch, initialMfrBatches, updateBatchesBasedOnDate } from '../../data/manufacturerData';
+import { ManufacturerBatch, getMfrBatches, updateBatchesBasedOnDate } from '../../data/manufacturerData';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
@@ -11,7 +11,7 @@ const MedicineBatches = () => {
   const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
-    setBatches(updateBatchesBasedOnDate(initialMfrBatches));
+    setBatches(updateBatchesBasedOnDate(getMfrBatches()));
   }, []);
 
   const filteredBatches = batches.filter(batch => {

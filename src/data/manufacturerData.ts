@@ -18,24 +18,7 @@ export interface ManufacturerBatch {
   status: MfrBatchStatus;
 }
 
-export const initialMfrBatches: ManufacturerBatch[] = [
-  {
-    id: 'MED-TEST-001',
-    tabletId: 'TAB-PAR-0001',
-    manufacturer: 'ABC Pharmaceuticals Ltd.',
-    batchNumber: 'BATCH-PAR-26001',
-    medicineName: 'Paracetamol',
-    genericName: 'Acetaminophen',
-    type: 'Tablet',
-    strength: '500mg',
-    mfgDate: '10/09/2026',
-    expDate: '10/09/2028',
-    mrp: 50,
-    mfgQuantity: 1000,
-    distributedQuantity: 0,
-    remainingQuantity: 1000,
-    status: 'ACTIVE',
-  },
+const defaultBatches: ManufacturerBatch[] = [
   {
     id: 'MED-000101',
     tabletId: "TAB-000000",
@@ -97,7 +80,7 @@ export const initialMfrBatches: ManufacturerBatch[] = [
     type: 'Tablet',
     strength: '500mg',
     mfgDate: '2024-10-15',
-    expDate: '2026-10-15', // Near expiry depending on current date, let's set to near future
+    expDate: '2026-10-15', 
     mrp: 110,
     mfgQuantity: 8000,
     distributedQuantity: 4000,
@@ -143,3 +126,17 @@ export const updateBatchesBasedOnDate = (batches: ManufacturerBatch[]) => {
   });
 };
 
+export const getMfrBatches = (): ManufacturerBatch[] => {
+  const saved = localStorage.getItem('mfr_batches_v3');
+  if (saved) {
+    return JSON.parse(saved);
+  }
+  localStorage.setItem('mfr_batches_v3', JSON.stringify(defaultBatches));
+  return defaultBatches;
+};
+
+export const saveMfrBatch = (newBatch: ManufacturerBatch) => {
+  const batches = getMfrBatches();
+  batches.unshift(newBatch);
+  localStorage.setItem('mfr_batches_v3', JSON.stringify(batches));
+};

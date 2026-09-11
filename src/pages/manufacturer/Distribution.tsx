@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { initialMfrBatches } from '../../data/manufacturerData';
+import { getMfrBatches } from '../../data/manufacturerData';
 import { Truck, Search } from 'lucide-react';
 
 const Distribution = () => {
@@ -15,11 +15,11 @@ const Distribution = () => {
     { date: '2026-09-05', pharmacy: 'Apollo Pharmacy', medicine: 'Amoxicillin 500mg', batch: 'AMX-24031', quantity: 1000, status: 'Delivered' }
   ]);
 
-  const activeBatches = initialMfrBatches.filter(b => b.remainingQuantity > 0 && b.status !== 'EXPIRED');
+  const activeBatches = getMfrBatches().filter(b => b.remainingQuantity > 0 && b.status !== 'EXPIRED');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const batch = initialMfrBatches.find(b => b.id === formData.batchId);
+    const batch = getMfrBatches().find(b => b.id === formData.batchId);
     if (!batch) return;
     
     if (parseInt(formData.quantity) > batch.remainingQuantity) {

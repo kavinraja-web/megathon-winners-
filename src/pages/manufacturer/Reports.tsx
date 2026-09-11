@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FileText, Printer, Download, Plus, Trash2 } from 'lucide-react';
-import { initialMfrBatches } from '../../data/manufacturerData';
+import { getMfrBatches } from '../../data/manufacturerData';
 import type { CustomerData } from './AddCustomer';
 import toast from 'react-hot-toast';
 
@@ -42,7 +42,7 @@ const Reports = () => {
     const batchId = e.target.value;
     if (!batchId) return;
     
-    const batch = initialMfrBatches.find(b => b.id === batchId);
+    const batch = getMfrBatches().find(b => b.id === batchId);
     if (!batch) return;
 
     const newItem: ReportItem = {
@@ -173,7 +173,7 @@ const Reports = () => {
             defaultValue=""
           >
             <option value="" disabled>-- Select a Batch to Add --</option>
-            {initialMfrBatches.map(b => (
+            {getMfrBatches().map(b => (
               <option key={b.id} value={b.id}>{b.medicineName} - {b.batchNumber} (Available: {b.remainingQuantity})</option>
             ))}
           </select>

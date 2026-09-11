@@ -59,7 +59,7 @@ const Billing = () => {
   }, [isScanning]);
 
   const parseQRCode = (text: string) => {
-    if (!text.includes('MEDICINE:') && !text.includes('BATCH_NO:')) return null;
+    if (!text.includes('MEDICINE:') && !text.includes('BATCH NUMBER:') && !text.includes('BATCH_NO:')) return null;
     const lines = text.split(/\r?\n/);
     const data: any = {};
     lines.forEach(line => {
@@ -73,7 +73,7 @@ const Billing = () => {
 
   const handleBarcodeLookup = (barcode: string) => {
     const parsedQr = parseQRCode(barcode);
-    const searchCode = parsedQr ? (parsedQr['TABLET_NO'] || barcode) : barcode;
+    const searchCode = parsedQr ? (parsedQr['TABLET NUMBER'] || parsedQr['TABLET_NO'] || barcode) : barcode;
     const product = findProductByBarcode(searchCode);
     
     if (product) {
@@ -103,13 +103,13 @@ const Billing = () => {
     
     const productData = {
       name: unrecognizedQrData['MEDICINE'],
-      barcode: unrecognizedQrData['TABLET_NO']
+      barcode: unrecognizedQrData['TABLET NUMBER'] || unrecognizedQrData['TABLET_NO']
     };
     
     const batchData = {
-      batchNumber: unrecognizedQrData['BATCH_NO'],
-      manufacturingDate: unrecognizedQrData['MFG_DATE'],
-      expiryDate: unrecognizedQrData['EXP_DATE'],
+      batchNumber: unrecognizedQrData['BATCH NUMBER'] || unrecognizedQrData['BATCH_NO'],
+      manufacturingDate: unrecognizedQrData['MANUFACTURED DATE'] || unrecognizedQrData['MFG_DATE'],
+      expiryDate: unrecognizedQrData['EXPIRY DATE'] || unrecognizedQrData['EXP_DATE'],
       quantity: addQty,
       mrp: addMrp,
       sellingPrice: addSellingPrice
@@ -306,8 +306,8 @@ const Billing = () => {
 
               <div className="bg-white p-4 rounded-xl border border-orange-100 mb-6 space-y-2">
                 <div className="flex justify-between text-sm"><span className="text-slate-500">Medicine:</span><span className="font-semibold text-slate-800">{unrecognizedQrData['MEDICINE']}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-slate-500">Batch No:</span><span className="font-semibold font-mono text-slate-800">{unrecognizedQrData['BATCH_NO']}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-slate-500">Expiry:</span><span className="font-semibold text-slate-800">{unrecognizedQrData['EXP_DATE']}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-slate-500">Batch No:</span><span className="font-semibold font-mono text-slate-800">{unrecognizedQrData['BATCH NUMBER'] || unrecognizedQrData['BATCH_NO']}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-slate-500">Expiry:</span><span className="font-semibold text-slate-800">{unrecognizedQrData['EXPIRY DATE'] || unrecognizedQrData['EXP_DATE']}</span></div>
               </div>
 
               <div className="grid grid-cols-3 gap-4 mb-6">

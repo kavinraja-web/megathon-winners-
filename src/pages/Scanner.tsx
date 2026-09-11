@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QrCode, Search, ShieldAlert, CheckCircle, AlertTriangle, Camera, Info, XCircle } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { initialMfrBatches } from '../data/manufacturerData';
+import { getMfrBatches } from '../data/manufacturerData';
 
 const Scanner = () => {
   const [scanState, setScanState] = useState<'idle' | 'scanning' | 'success' | 'fraud' | 'expired' | 'invalid'>('idle');
@@ -76,7 +76,7 @@ const Scanner = () => {
       const batchNo = parsed['BATCH NUMBER'];
       setBatchId(batchNo);
       
-      const found = initialMfrBatches.find(b => b.batchNumber === batchNo);
+      const found = getMfrBatches().find(b => b.batchNumber === batchNo);
       setSystemBatch(found);
       
       if (found) {
@@ -134,7 +134,7 @@ const Scanner = () => {
     // Simulate a scan using batchId for testing
     // For manual entry, we mock a payload based on the input to allow testing
     // But actually, manual entry of batch ID can just mock the text payload
-    const found = initialMfrBatches.find(b => b.batchNumber === batchId);
+    const found = getMfrBatches().find(b => b.batchNumber === batchId);
     if (found) {
       triggerScanLogic(`MEDICINE: ${found.medicineName} ${found.strength || ""}\nTABLET NUMBER: ${found.tabletId}\nBATCH NUMBER: ${found.batchNumber}\nMANUFACTURED DATE: ${found.mfgDate}\nEXPIRY DATE: ${found.expDate}`);
     } else {

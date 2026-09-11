@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
-import { initialMfrBatches, updateBatchesBasedOnDate, ManufacturerBatch } from '../../data/manufacturerData';
+import { getMfrBatches, updateBatchesBasedOnDate, ManufacturerBatch } from '../../data/manufacturerData';
 import { Camera, X, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 
 const ScanVerify = () => {
@@ -79,7 +79,7 @@ const ScanVerify = () => {
     }
 
     // Look up the batch
-    const updatedBatches = updateBatchesBasedOnDate(initialMfrBatches);
+    const updatedBatches = updateBatchesBasedOnDate(getMfrBatches());
     const found = updatedBatches.find(b => b.id === idToSearch || b.batchNumber === idToSearch || b.tabletId === idToSearch);
     
     if (found) {

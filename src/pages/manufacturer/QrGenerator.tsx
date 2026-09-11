@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import QRCode from 'react-qr-code';
 import { useSearchParams } from 'react-router-dom';
-import { initialMfrBatches } from '../../data/manufacturerData';
+import { getMfrBatches } from '../../data/manufacturerData';
 import { Download, Printer, Search, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -16,7 +16,7 @@ const QrGenerator = () => {
   useEffect(() => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const results = initialMfrBatches.filter(b => 
+      const results = getMfrBatches().filter(b => 
         (b.batchNumber && b.batchNumber.toLowerCase().includes(query)) ||
         (b.tabletId && b.tabletId.toLowerCase().includes(query)) ||
         (b.medicineName && b.medicineName.toLowerCase().includes(query))
