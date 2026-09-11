@@ -38,7 +38,6 @@ const Sidebar = ({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (val: bool
     if (userRole === 'distributor') {
       return ['Dashboard', 'Medicine Batches', 'QR Scanner', 'Supply Reports', 'Return Tracking', 'Stock Requests', 'Expiry Alerts'].includes(item.name);
     }
-    }
     return true;
   });
 
