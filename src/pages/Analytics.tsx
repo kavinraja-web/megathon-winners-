@@ -189,6 +189,35 @@ const Analytics = () => {
     downloadReport(reportData, `PharmaTrace_Report_${new Date().toISOString().split('T')[0]}.html`);
   };
 
+
+  const handleShare = () => {
+    if (!reportData) return;
+    const id = window.prompt('Enter the unique ID of the recipient (e.g. DIST-1234, MFR-5678) to share this report:');
+    if (id && id.trim() !== '') {
+      const cleanId = id.trim().toLowerCase();
+      
+      const notifsKey = `sys_notifications_${cleanId}`;
+      const existingNotifs = JSON.parse(localStorage.getItem(notifsKey) || '[]');
+      existingNotifs.unshift({
+        type: 'blue',
+        text: `New Pharmacy/Retail Report shared securely on ${new Date().toLocaleDateString()}.`
+      });
+      localStorage.setItem(notifsKey, JSON.stringify(existingNotifs));
+
+      const reportsKey = `shared_reports_${cleanId}`;
+      const existingReports = JSON.parse(localStorage.getItem(reportsKey) || '[]');
+      existingReports.unshift({
+        date: new Date().toLocaleDateString(),
+        from: 'Pharmacy (Retail)',
+        total: 'Analytics Report',
+        items: 1
+      });
+      localStorage.setItem(reportsKey, JSON.stringify(existingReports));
+
+      toast.success(`Report securely shared to ID: ${id.trim().toUpperCase()}`);
+    }
+  };
+
   const handlePrint = () => {
     if (!reportData) return;
     printReport(reportData);
@@ -310,6 +339,14 @@ const Analytics = () => {
             <h3 className="font-bold text-slate-900">Generated Report</h3>
             {reportData && (
               <div className="flex items-center gap-3">
+
+                <button 
+                  onClick={handleShare}
+                  className="flex items-center gap-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors shadow-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+                  Share via ID
+                </button>
                 <button 
                   onClick={handlePrint}
                   className="flex items-center gap-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition-colors border border-slate-200"

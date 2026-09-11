@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Package, Truck, AlertTriangle, XCircle, CheckCircle } from 'lucide-react';
-import { ManufacturerBatch, initialMfrBatches, updateBatchesBasedOnDate } from '../../data/manufacturerData';
+import { ManufacturerBatch, getMfrBatches, updateBatchesBasedOnDate } from '../../data/manufacturerData';
 
 const Dashboard = () => {
   const [batches, setBatches] = useState<ManufacturerBatch[]>([]);
 
   useEffect(() => {
-    setBatches(updateBatchesBasedOnDate(initialMfrBatches));
+    setBatches(updateBatchesBasedOnDate(getMfrBatches()));
   }, []);
 
   const totalBatches = batches.length;

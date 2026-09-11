@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { initialMfrBatches } from '../../data/manufacturerData';
+import { getMfrBatches } from '../../data/manufacturerData';
 
 const InventoryStock = () => {
   // Aggregate data by medicine
@@ -7,7 +7,7 @@ const InventoryStock = () => {
 
   useEffect(() => {
     const agg: Record<string, any> = {};
-    initialMfrBatches.forEach(b => {
+    getMfrBatches().forEach(b => {
       const key = `${b.medicineName} ${b.strength}`;
       if (!agg[key]) {
         agg[key] = {

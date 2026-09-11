@@ -15,12 +15,46 @@ export interface UserProfile {
   created_at: string;
 }
 
+export const DEMO_PROFILES: Record<string, UserProfile> = {
+  'demo-manufacturer': {
+    id: 'demo-mfr-id',
+    user_id: 'demo-manufacturer',
+    role: 'manufacturer',
+    full_name: 'PharmaCorp (Demo Manufacturer)',
+    email: 'mfr@demo.com',
+    organization_name: 'PharmaCorp Inc.',
+    phone: '555-0001',
+    created_at: new Date().toISOString()
+  },
+  'demo-distributor': {
+    id: 'demo-dist-id',
+    user_id: 'demo-distributor',
+    role: 'distributor',
+    full_name: 'GlobalLogistics (Demo Distributor)',
+    email: 'dist@demo.com',
+    organization_name: 'Global Logistics Hub',
+    phone: '555-0002',
+    created_at: new Date().toISOString()
+  },
+  'demo-pharmacy': {
+    id: 'demo-pharm-id',
+    user_id: 'demo-pharmacy',
+    role: 'pharmacy',
+    full_name: 'CityRx (Demo Pharmacy)',
+    email: 'pharm@demo.com',
+    organization_name: 'CityRx Pharmacy',
+    phone: '555-0003',
+    created_at: new Date().toISOString()
+  }
+};
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  loginDemo: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -29,6 +63,7 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   loading: true,
   signOut: async () => {},
+  loginDemo: () => {}
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -38,7 +73,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch initial session
+    const demoRole = localStorage.getItem('PHARMAX_DEMO_ROLE');
+    if (demoRole && DEMO_PROFILES[`demo-${demoRole}`]) {
+      const p = DEMO_PROFILES[`demo-${demoRole}`];
+      setProfile(p);
+      setUser({ id: p.user_id, email: p.email } as User);
+      setSession({ user: { id: p.user_id, email: p.email }, access_token: 'demo' } as Session);
+      setLoading(false);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -49,8 +93,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (localStorage.getItem('PHARMAX_DEMO_ROLE')) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -66,25 +110,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) {
-        console.error('Error fetching profile:', error);
-      } else if (data) {
-        setProfile(data as UserProfile);
-      }
+      const { data, error } = await supabase.from('profiles').select('*').eq('user_id', userId).single();
+      if (!error && data) setProfile(data as UserProfile);
     } catch (error) {
-      console.error('Unexpected error fetching profile:', error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
+  const loginDemo = (role: UserRole) => {
+    localStorage.setItem('PHARMAX_DEMO_ROLE', role);
+    window.location.href = `/${role}/dashboard`;
+  };
+
   const signOut = async () => {
+    if (localStorage.getItem('PHARMAX_DEMO_ROLE')) {
+      localStorage.removeItem('PHARMAX_DEMO_ROLE');
+      window.location.href = '/login';
+      return;
+    }
+    
     setSession(null);
     setUser(null);
     setProfile(null);
@@ -93,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, loading, signOut }}>
+    <AuthContext.Provider value={{ session, user, profile, loading, signOut, loginDemo }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,9 +1,9 @@
 import React from 'react';
-import { initialMfrBatches, updateBatchesBasedOnDate } from '../../data/manufacturerData';
+import { getMfrBatches, updateBatchesBasedOnDate } from '../../data/manufacturerData';
 import { AlertTriangle, Clock, XCircle } from 'lucide-react';
 
 const ExpiryAlerts = () => {
-  const batches = updateBatchesBasedOnDate(initialMfrBatches);
+  const batches = updateBatchesBasedOnDate(getMfrBatches());
   
   const expired = batches.filter(b => b.status === 'EXPIRED');
   const nearExpiry = batches.filter(b => b.status === 'NEAR EXPIRY');

@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { 
   initDB, getProducts, getBatches, getBills, getReverseChain, 
   saveBatches, saveBills, saveReverseChain, saveProducts, resetDB,
-  Product, BatchRecord, BillRecord, ReverseChainRecord, BillItem 
+  getStockRequests, saveStockRequests,
+  Product, BatchRecord, BillRecord, ReverseChainRecord, BillItem, StockRequestRecord 
 } from '../data/db';
 import { differenceInDays, isBefore } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -12,6 +13,9 @@ interface POSContextType {
   batches: BatchRecord[];
   bills: BillRecord[];
   currentBill: BillItem[];
+  stockRequests: StockRequestRecord[];
+  requestStock: (batchNumber: string, productName: string, distributorId: string, requestedQuantity: number, month: string) => void;
+  updateStockRequestStatus: (requestId: string, status: string) => void;
   addToBill: (batch: BatchRecord, product: Product, quantity: number) => boolean;
   removeFromBill: (batchId: string) => void;
   updateQuantity: (batchId: string, quantity: number) => void;
@@ -32,12 +36,14 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [batches, setBatches] = useState<BatchRecord[]>([]);
   const [bills, setBills] = useState<BillRecord[]>([]);
+  const [stockRequests, setStockRequests] = useState<StockRequestRecord[]>([]);
   const [currentBill, setCurrentBill] = useState<BillItem[]>([]);
 
   const loadData = () => {
     initDB();
     const loadedProducts = getProducts();
     setProducts(loadedProducts);
+    setStockRequests(getStockRequests());
     
     // Calculate fresh status for active batches
     const rawBatches = getBatches();
@@ -74,9 +80,6 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
     if (madeChanges) {
       saveReverseChain(reverseChain);
       saveBatches(updatedBatches);
-      if (autoReturns > 0) {
-        setTimeout(() => toast.error(`${autoReturns} expired batch(es) automatically returned to distributor!`), 1000);
-      }
     }
 
     setBatches(updatedBatches);
@@ -122,7 +125,7 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
     if (batch.status === 'EXPIRED' || batch.status === 'RETURN_REQUESTED') {
-      toast.error('⚠️ This medicine batch has expired or was automatically returned and cannot be sold.');
+      toast.error('Bill can\'t be generated for expired medicines');
       return false;
     }
     if (batch.quantity === 0) {
@@ -197,8 +200,12 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
     // Validate one last time
     for (const item of currentBill) {
       const batch = batches.find(b => b.id === item.batchId);
-      if (!batch || batch.quantity < item.quantity || batch.status === 'EXPIRED' || batch.status === 'PERMANENTLY_CLOSED') {
+      if (!batch || batch.quantity < item.quantity) {
         toast.error(`Validation failed for ${item.batchNumber}`);
+        return null;
+      }
+      if (batch.status === 'EXPIRED' || batch.status === 'PERMANENTLY_CLOSED' || batch.status === 'RETURN_REQUESTED') {
+        toast.error('Bill can\'t be generated for expired medicines');
         return null;
       }
     }
@@ -313,7 +320,7 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
       };
       const reverseChain = getReverseChain();
       saveReverseChain([...reverseChain, newRecord]);
-      toast.error('Product is already expired! Automatic return message sent to distributor.', { duration: 6000 });
+      toast.success('Product is already expired. Auto-returned to distributor.');
     } else {
       toast.success('Product and Batch added to inventory successfully');
     }
@@ -321,9 +328,38 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
     return { product, batch };
   };
 
+  const requestStock = (batchNumber: string, productName: string, distributorId: string, requestedQuantity: number, month: string) => {
+    const newRequest: StockRequestRecord = {
+      id: `SR-${Date.now()}`,
+      batchNumber,
+      productName,
+      distributorId,
+      requestedQuantity,
+      month,
+      status: 'PENDING',
+      dateRequested: new Date().toISOString()
+    };
+    const updatedRequests = [...stockRequests, newRequest];
+    setStockRequests(updatedRequests);
+    saveStockRequests(updatedRequests);
+    toast.success('Stock request sent successfully');
+  };
+
+  const updateStockRequestStatus = (requestId: string, status: string) => {
+    const updatedRequests = stockRequests.map(req => req.id === requestId ? { ...req, status } : req);
+    setStockRequests(updatedRequests);
+    saveStockRequests(updatedRequests);
+    if (status === 'APPROVED') {
+      toast.success('Stock request approved');
+    } else {
+      toast.success('Stock request rejected');
+    }
+  };
+
   return (
     <POSContext.Provider value={{
-      products, batches, bills, currentBill,
+      products, batches, bills, currentBill, stockRequests,
+      requestStock, updateStockRequestStatus,
       addToBill, removeFromBill, updateQuantity, clearBill, generateBill,
       checkExpiryStatus: calculateExpiryStatus, calculateDaysRemaining,
       findProductByBarcode, getBatchesForProduct, createReturnRequest, addInventoryItem, resetDemoData

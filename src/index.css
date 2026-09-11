@@ -11,3 +11,18 @@
     @apply bg-slate-50 text-slate-900;
   }
 }
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: white !important;
+  }
+  aside, nav, header {
+    display: none !important;
+  }
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+}

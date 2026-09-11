@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Save, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { initialMfrBatches, ManufacturerBatch } from '../../data/manufacturerData';
+import { getMfrBatches, saveMfrBatch, ManufacturerBatch } from '../../data/manufacturerData';
 
 const AddBatch = () => {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const AddBatch = () => {
       status: 'ACTIVE'
     };
 
-    initialMfrBatches.push(newBatch);
+    saveMfrBatch(newBatch);
     setSuccess('Medicine batch registered successfully.');
   };
 

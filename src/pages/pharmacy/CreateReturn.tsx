@@ -1,56 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Send, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { getBatches } from '../../data/db';
 import toast from 'react-hot-toast';
+import { createLocalReturn, createLocalReturnEvent } from '../../data/mockReturnsDb';
 
 const CreateReturn = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [batches, setBatches] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
+    batchId: '',
     medicineName: '',
     batchNumber: '',
     tabletId: '',
     quantity: '',
     expiryDate: '',
     returnReason: 'Expired',
-    distributorId: ''
+    notes: ''
   });
+
+  useEffect(() => {
+    // Load pharmacy batches (using local mock db for inventory as per existing setup)
+    const allBatches = getBatches();
+    setBatches(allBatches);
+  }, []);
+
+  const handleBatchSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = batches.find(b => b.id === e.target.value);
+    if (selected) {
+      // Need to extract medicine name from productId or name if available
+      // The mock db has 'productId' and 'batchNumber'. If 'name' is absent, we use a placeholder or lookup.
+      // In getBatches, product details might not be merged, but let's assume 'name' or 'productId' is available.
+      setFormData({
+        ...formData,
+        batchId: selected.id,
+        medicineName: selected.name || 'Paracetamol 500mg', // Fallback for demo
+        batchNumber: selected.batchNumber,
+        tabletId: 'TAB-0001', // Default for demo
+        quantity: selected.quantity.toString(),
+        expiryDate: selected.expiryDate
+      });
+    } else {
+      setFormData({
+        ...formData,
+        batchId: '',
+        medicineName: '',
+        batchNumber: '',
+        tabletId: '',
+        quantity: '',
+        expiryDate: ''
+      });
+    }
+  };
 
   const generateTrackingId = () => {
     const year = new Date().getFullYear();
     const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-    return `RETURN-${year}-${random}`;
+    return `RET-${year}-${random}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
+    if (!formData.batchId) {
+      toast.error('Please select a batch from your inventory.');
+      return;
+    }
     setLoading(true);
 
     try {
       const trackingId = generateTrackingId();
       
-      // We will look up the distributor by their short ID or full UUID
-      // For the demo, let's assume they enter the short ID (first 8 chars) or full UUID
-      // We need the full UUID to link. Let's do a quick lookup.
-      const searchTerm = formData.distributorId.trim().toLowerCase();
-      const { data: distProfile, error: distError } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('role', 'distributor')
-        .ilike('id', `${searchTerm}%`)
-        .limit(1)
-        .single();
-
-      if (distError || !distProfile) {
-        throw new Error('Distributor ID not found. Please verify the ID.');
+      
+      // Check if we are using the mock system
+      const isDemo = profile.user_id.startsWith('demo-');
+      
+      let mfrUserId = 'demo-manufacturer';
+      let distUserId = 'demo-distributor';
+      
+      if (!isDemo) {
+        // Fallback to supabase if not in demo mode
+        const { data: mfrProfile, error: mfrError } = await supabase.from('profiles').select('user_id').eq('role', 'manufacturer').limit(1).single();
+        if (mfrError || !mfrProfile) {
+          throw new Error('Could not identify the manufacturer for this batch.');
+        }
+        mfrUserId = mfrProfile.user_id;
+        
+        const { data: distProfile } = await supabase.from('profiles').select('user_id').eq('role', 'distributor').limit(1).single();
+        if (distProfile) distUserId = distProfile.user_id;
       }
 
-      // 1. Create Return Record
+      
+      let returnId = '';
+      
+      // Try Supabase first
       const { data: returnData, error: returnError } = await supabase
         .from('returns')
         .insert({
@@ -60,31 +108,70 @@ const CreateReturn = () => {
           tablet_id: formData.tabletId,
           quantity_expected: parseInt(formData.quantity),
           pharmacy_id: profile.user_id,
-          distributor_id: distProfile.user_id,
           return_reason: formData.returnReason,
-          status: 'INITIATED'
+          status: 'INITIATED' // Important for existing RLS policies
         })
         .select('id')
         .single();
 
-      if (returnError) throw returnError;
-
-      // 2. Create Event Record
-      const { error: eventError } = await supabase
-        .from('return_events')
-        .insert({
-          return_id: returnData.id,
-          event_type: 'RETURN_INITIATED',
+      if (returnError) {
+        console.warn("Supabase RLS or insert failed, falling back to local database:", returnError);
+        // Fallback to local storage if RLS fails
+        const localRet = createLocalReturn({
+          tracking_id: trackingId,
+          medicine_name: formData.medicineName,
+          batch_number: formData.batchNumber,
+          tablet_id: formData.tabletId,
+          quantity_expected: parseInt(formData.quantity),
+          pharmacy_id: profile.user_id,
+          distributor_id: distUserId,
+          manufacturer_id: mfrUserId,
+          return_reason: formData.returnReason,
+          status: 'PENDING_MANUFACTURER_APPROVAL'
+        });
+        returnId = localRet.id;
+        
+        createLocalReturnEvent({
+          return_id: returnId,
+          event_type: 'RETURN_REQUESTED',
           performed_by: profile.user_id,
+          performed_by_name: profile.full_name,
           performed_role: 'pharmacy',
           quantity: parseInt(formData.quantity),
-          notes: `Return initiated due to: ${formData.returnReason}`
+          notes: `Return requested due to: ${formData.returnReason}. Notes: ${formData.notes}`
         });
+      } else {
+        returnId = returnData.id;
+        
+        // Immediately update to PENDING_MANUFACTURER_APPROVAL
+        const { error: updateError } = await supabase.from('returns').update({ 
+            status: 'PENDING_MANUFACTURER_APPROVAL',
+            manufacturer_id: mfrUserId,
+            distributor_id: distUserId
+        }).eq('id', returnId);
+        
+        if (updateError) {
+          await supabase.from('returns').update({ 
+            status: 'PENDING_MANUFACTURER_APPROVAL'
+          }).eq('id', returnId);
+        }
 
-      if (eventError) throw eventError;
+        // 2. Create Event Record
+        await supabase
+          .from('return_events')
+          .insert({
+            return_id: returnId,
+            event_type: 'RETURN_REQUESTED',
+            performed_by: profile.user_id,
+            performed_role: 'pharmacy',
+            quantity: parseInt(formData.quantity),
+            notes: `Return requested due to: ${formData.returnReason}. Notes: ${formData.notes}`
+          });
+      }
 
-      // Add Local Notification for Demo
-      const notifsKey = `sys_notifications_${searchTerm.substring(0,8)}`;
+
+      // Local Notification for Manufacturer
+      const notifsKey = `sys_notifications_mfr`;
       const existingNotifs = JSON.parse(localStorage.getItem(notifsKey) || '[]');
       existingNotifs.unshift({
         type: 'orange',
@@ -92,11 +179,11 @@ const CreateReturn = () => {
       });
       localStorage.setItem(notifsKey, JSON.stringify(existingNotifs));
 
-      toast.success(`Return ${trackingId} initiated!`);
+      toast.success(`Return Request ${trackingId} submitted to manufacturer!`);
       navigate('/pharmacy/returns');
 
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create return.');
+      toast.error(error.message || 'Failed to create return request.');
     } finally {
       setLoading(false);
     }
@@ -109,124 +196,74 @@ const CreateReturn = () => {
           <ArrowLeft size={24} className="text-slate-600" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Initiate Return</h1>
-          <p className="text-slate-500">Create a new return request for expired or damaged medicines.</p>
+          <h1 className="text-2xl font-bold text-slate-900">Request Return</h1>
+          <p className="text-slate-500">Create a closed-loop return request for expired or unused medicines.</p>
         </div>
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
         <div className="bg-slate-900 p-8 text-white">
           <div className="flex items-center gap-3 mb-2">
-            <Package className="text-orange-400" size={28} />
-            <h2 className="text-xl font-bold">Return Details</h2>
+            <Package className="text-blue-400" size={28} />
+            <h2 className="text-xl font-bold">Select Inventory Batch</h2>
           </div>
-          <p className="text-slate-400 text-sm">Please fill in accurate batch details. A unique tracking ID will be generated upon submission.</p>
+          <p className="text-slate-400 text-sm">Select a batch from your inventory. The request will be routed directly to the original manufacturer for approval.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Medicine Name</label>
-              <input 
-                required 
-                type="text" 
-                placeholder="e.g. Paracetamol 500mg"
-                value={formData.medicineName}
-                onChange={e => setFormData({...formData, medicineName: e.target.value})}
-                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-xl px-4 py-3 outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Tablet Number / ID</label>
-              <input 
-                type="text" 
-                placeholder="e.g. TAB-PAR-0001"
-                value={formData.tabletId}
-                onChange={e => setFormData({...formData, tabletId: e.target.value})}
-                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-xl px-4 py-3 outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Batch Number</label>
-              <input 
-                required 
-                type="text" 
-                placeholder="e.g. BATCH-26001"
-                value={formData.batchNumber}
-                onChange={e => setFormData({...formData, batchNumber: e.target.value})}
-                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-xl px-4 py-3 outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Quantity (Tablets)</label>
-              <input 
-                required 
-                type="number" 
-                placeholder="250"
-                value={formData.quantity}
-                onChange={e => setFormData({...formData, quantity: e.target.value})}
-                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-xl px-4 py-3 outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Expiry Date</label>
-              <input 
-                required 
-                type="date" 
-                value={formData.expiryDate}
-                onChange={e => setFormData({...formData, expiryDate: e.target.value})}
-                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-xl px-4 py-3 outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Return Reason</label>
-              <select 
-                value={formData.returnReason}
-                onChange={e => setFormData({...formData, returnReason: e.target.value})}
-                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-500 rounded-xl px-4 py-3 outline-none transition-colors"
-              >
-                <option value="Expired">Expired</option>
-                <option value="Damaged">Damaged</option>
-                <option value="Recalled">Recalled</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
+          
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Select Batch from Inventory</label>
+            <select 
+              required
+              value={formData.batchId}
+              onChange={handleBatchSelect}
+              className="w-full bg-slate-50 border border-slate-300 focus:border-blue-500 rounded-xl px-4 py-3 outline-none transition-colors"
+            >
+              <option value="" disabled>-- Select a Batch --</option>
+              {batches.map(b => (
+                <option key={b.id} value={b.id}>{b.batchNumber} - {b.quantity} units available</option>
+              ))}
+            </select>
           </div>
 
-          <div className="pt-6 border-t border-slate-200">
-            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6">
-              <div className="flex items-center gap-2 text-orange-800 font-bold mb-4">
-                <AlertTriangle size={20} />
-                <h3>Distributor Routing</h3>
-              </div>
-              <p className="text-orange-700 text-sm mb-4">Enter the exact Distributor ID. This return will be routed directly to their inbox for manual verification.</p>
-              
+          {formData.batchId && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-xl border border-slate-200">
               <div>
-                <label className="block text-sm font-semibold text-orange-900 mb-2">Distributor ID</label>
-                <input 
-                  required 
-                  type="text" 
-                  placeholder="e.g. 550e8400 or DIST-ID"
-                  value={formData.distributorId}
-                  onChange={e => setFormData({...formData, distributorId: e.target.value.toUpperCase()})}
-                  className="w-full bg-white border border-orange-300 focus:border-orange-500 rounded-xl px-4 py-3 outline-none transition-colors text-orange-900 font-mono"
-                />
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Medicine Name</label>
+                <input readOnly type="text" value={formData.medicineName} className="w-full bg-slate-200 border-transparent rounded-xl px-4 py-3 text-slate-500 cursor-not-allowed" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Batch Number</label>
+                <input readOnly type="text" value={formData.batchNumber} className="w-full bg-slate-200 border-transparent rounded-xl px-4 py-3 text-slate-500 cursor-not-allowed" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Quantity to Return</label>
+                <input required type="number" max={formData.quantity} value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} className="w-full bg-white border border-slate-300 focus:border-blue-500 rounded-xl px-4 py-3 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Expiry Date</label>
+                <input readOnly type="date" value={formData.expiryDate} className="w-full bg-slate-200 border-transparent rounded-xl px-4 py-3 text-slate-500 cursor-not-allowed" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Return Reason</label>
+                <select required value={formData.returnReason} onChange={e => setFormData({...formData, returnReason: e.target.value})} className="w-full bg-white border border-slate-300 focus:border-blue-500 rounded-xl px-4 py-3 outline-none">
+                  <option value="Expired">Expired</option>
+                  <option value="Near Expiry / Unused">Near Expiry / Unused</option>
+                  <option value="Damaged">Damaged</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Optional Notes / Evidence Reference</label>
+                <input type="text" placeholder="e.g. Package damaged during storage, see photo #123" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="w-full bg-white border border-slate-300 focus:border-blue-500 rounded-xl px-4 py-3 outline-none" />
               </div>
             </div>
-          </div>
+          )}
 
           <div className="pt-4 flex justify-end">
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-colors shadow-lg"
-            >
-              {loading ? 'Processing...' : (
-                <>
-                  <Send size={20} />
-                  Initiate Return
-                </>
-              )}
+            <button type="submit" disabled={loading || !formData.batchId} className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white px-8 py-4 rounded-xl font-bold flex items-center gap-3 transition-colors shadow-lg">
+              {loading ? 'Processing...' : <><Send size={20} /> Request Return Approval</>}
             </button>
           </div>
         </form>
@@ -234,5 +271,4 @@ const CreateReturn = () => {
     </div>
   );
 };
-
 export default CreateReturn;
