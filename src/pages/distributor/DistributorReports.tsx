@@ -46,7 +46,6 @@ const DistributorReports = () => {
 
   const handleExportCSV = () => {
     if (filteredReports.length === 0) {
-      toast.error("No data available to export.");
       return;
     }
 
@@ -77,17 +76,14 @@ const DistributorReports = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast.success("CSV file downloaded successfully!");
   };
 
   const handleSharePDF = () => {
     if (!pharmacistId) {
-      toast.error("Please enter a Pharmacist Unique ID");
       return;
     }
     
     if (filteredReports.length === 0) {
-      toast.error("No data available to share.");
       return;
     }
 
@@ -126,10 +122,10 @@ const DistributorReports = () => {
     doc.save(`Dispatch_Report_Pharm_${pharmacistId}.pdf`);
     
     // Simulate sending to pharmacist via system
-    toast.success(`Data successfully sent as PDF to Pharmacist [${pharmacistId}]`);
-    
-    setIsShareModalOpen(false);
-    setPharmacistId('');
+    setTimeout(() => {
+      setIsShareModalOpen(false);
+      setPharmacistId('');
+    }, 1500);
   };
 
   return (

@@ -96,6 +96,14 @@ const Scanner = () => {
              // Assuming DD/MM/YYYY
              expDateObj = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
            }
+        } else if (expDateStr.includes('-')) {
+           const parts = expDateStr.split('-');
+           // Handle DD-MM-YYYY format
+           if (parts.length === 3 && parts[0].length === 2 && parts[2].length === 4) {
+             expDateObj = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+           } else {
+             expDateObj = new Date(expDateStr);
+           }
         }
         
         if (!isNaN(expDateObj.getTime()) && expDateObj < new Date()) {
@@ -136,7 +144,7 @@ const Scanner = () => {
     // But actually, manual entry of batch ID can just mock the text payload
     const found = getMfrBatches().find(b => b.batchNumber === batchId);
     if (found) {
-      triggerScanLogic(`MEDICINE: ${found.medicineName} ${found.strength || ""}\nTABLET NUMBER: ${found.tabletId}\nBATCH NUMBER: ${found.batchNumber}\nMANUFACTURED DATE: ${found.mfgDate}\nEXPIRY DATE: ${found.expDate}`);
+      triggerScanLogic(`MEDICINE: ${found.medicineName} ${found.strength || ""}\nTABLET NUMBER: ${found.tabletId}\nBATCH NUMBER: ${found.batchNumber}\nMANUFACTURED DATE: ${found.mfgDate}\nEXPIRY DATE: ${found.expDate}\nMRP: ${found.mrp || 0}`);
     } else {
       triggerScanLogic(batchId); // Might result in invalid
     }
@@ -344,12 +352,8 @@ const Scanner = () => {
                   )}
                 </>
               ) : (
-                <div className="flex items-center gap-3 text-slate-700 bg-slate-100 p-4 rounded-xl border border-slate-200">
-                  <Info size={24} className="shrink-0" />
-                  <div>
-                    <p className="font-bold">UNKNOWN BATCH</p>
-                    <p className="text-sm">This batch was not found in the system database.</p>
-                  </div>
+                <div className="hidden">
+                  {/* Unknown batch block removed as requested */}
                 </div>
               )}
               

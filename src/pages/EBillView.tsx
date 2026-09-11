@@ -22,22 +22,8 @@ const EBillView = () => {
     }
   }, [searchParams]);
 
-  const downloadPDF = async () => {
-    if (!invoiceRef.current || !billData) return;
-    
-    // Dynamically import html2pdf
-    const html2pdf = (await import('html2pdf.js')).default;
-    
-    const element = invoiceRef.current;
-    const opt = {
-      margin: 1,
-      filename: `PharmaTrace_E-Bill_${billData.id}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().set(opt).from(element).save();
+  const downloadPDF = () => {
+    window.print();
   };
 
   if (error) {
@@ -58,7 +44,31 @@ const EBillView = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 p-4 py-8 md:py-12 flex flex-col items-center">
-      <div className="w-full max-w-2xl flex justify-between items-center mb-6">
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #printable-invoice, #printable-invoice * {
+            visibility: visible;
+          }
+          #printable-invoice {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 20px;
+            box-shadow: none;
+            border: none;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <div className="w-full max-w-2xl flex justify-between items-center mb-6 no-print">
         <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
           <CheckCircle className="text-emerald-500" /> Digital E-Bill Verified
         </h1>
@@ -71,6 +81,7 @@ const EBillView = () => {
       </div>
 
       <div 
+        id="printable-invoice"
         ref={invoiceRef}
         className="w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-lg border border-slate-200"
       >
