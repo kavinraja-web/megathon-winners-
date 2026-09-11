@@ -125,7 +125,7 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
     if (batch.status === 'EXPIRED' || batch.status === 'RETURN_REQUESTED') {
-      toast.error('⚠️ This medicine batch has expired or was automatically returned and cannot be sold.');
+      toast.error('Bill can\'t be generated for expired medicines');
       return false;
     }
     if (batch.quantity === 0) {
