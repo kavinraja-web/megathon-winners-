@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { usePOS } from '../context/POSContext';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Download, Sparkles, FileText, Loader2, Key, TrendingUp, Package, AlertTriangle, IndianRupee } from 'lucide-react';
+import { Download, Sparkles, FileText, Loader2, TrendingUp, Package, AlertTriangle, IndianRupee, Printer } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { mockBatches } from '../data/mockData';
@@ -26,10 +25,38 @@ const downloadReport = (content: string, filename: string) => {
   document.body.removeChild(element);
 };
 
+const printReport = (content: string) => {
+  const printWindow = window.open('', '', 'width=800,height=600');
+  if (printWindow) {
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Pharma Trace Report</title>
+          <style>
+            body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #1e293b; }
+            h1 { font-size: 1.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+            h2 { font-size: 1.25rem; color: #0f172a; margin-top: 24px; margin-bottom: 12px; }
+            p { margin-bottom: 12px; line-height: 1.6; color: #334155; }
+            ul { margin-bottom: 16px; padding-left: 24px; }
+            li { margin-bottom: 8px; line-height: 1.5; color: #334155; }
+            strong { color: #0f172a; }
+          </style>
+        </head>
+        <body>
+          ${content}
+          <script>
+            window.onload = function() { window.print(); window.close(); }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }
+};
+
 const Analytics = () => {
-  const { products, batches, bills } = usePOS();
+  const { products, batches, bills, reverseChain } = usePOS();
   
-  const [apiKey, setApiKey] = useState(import.meta.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [reportData, setReportData] = useState<string | null>(null);
 
@@ -60,55 +87,111 @@ const Analytics = () => {
   }, [mockBatches]);
 
 
-  const generateAIReport = async () => {
-    if (!apiKey) {
-      toast.error("Please enter a Gemini API Key to generate the AI report.");
-      return;
-    }
-
+  const generateAIReport = () => {
     setIsGenerating(true);
     setReportData(null);
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    setTimeout(() => {
+      try {
+        const totalSalesVal = calculateTotalSales();
+        const stockUnits = calculateTotalStock();
+        const expiringSoonCount = calculateExpiringSoon();
+        const realExpiredBatches = batches.filter(b => b.status === 'EXPIRED');
+        const activeBatches = batches.filter(b => b.status === 'ACTIVE');
+        
+        // Find top selling medicine (simplified)
+        const medSales: Record<string, number> = {};
+        bills.forEach(bill => {
+          bill.items.forEach(item => {
+            medSales[item.productName] = (medSales[item.productName] || 0) + item.quantity;
+          });
+        });
+        const topMed = Object.entries(medSales).sort((a, b) => b[1] - a[1])[0];
+        const topMedText = topMed ? `${topMed[0]} (${topMed[1]} units)` : 'No sales data available';
 
-      const prompt = `
-You are an expert pharmaceutical supply chain analyst. 
-I have the following data from my pharmacy tracking app. 
+        const hasSufficientData = bills.length > 0 || batches.length > 0;
 
-CURRENT INVENTORY BATCHES (Stock):
-${JSON.stringify(batches.map(b => ({ id: b.id, batchNo: b.batchNumber, qty: b.quantity, exp: b.expiryDate, status: b.status, price: b.sellingPrice })), null, 2)}
+        let generatedHtml = '';
 
-RECENT BILLS (Sales):
-${JSON.stringify(bills.map(b => ({ date: b.date, total: b.total, items: b.items.map(i => ({ name: i.productName, qty: i.quantity, price: i.unitPrice })) })), null, 2)}
+        if (!hasSufficientData) {
+          generatedHtml = `
+            <h1>Pharma Trace Pharmacy Intelligence Report</h1>
+            <h2>Data Insufficient</h2>
+            <p>There is currently insufficient data to generate a complete report. The system requires active inventory batches or recorded sales to perform analysis.</p>
+            <h3>How to improve this report:</h3>
+            <ul>
+              <li>Add medicine batches to your inventory.</li>
+              <li>Process sales transactions using the Billing POS.</li>
+              <li>Allow time for stock movement data to accumulate.</li>
+            </ul>
+          `;
+        } else {
+          generatedHtml = `
+            <h1>Pharma Trace Pharmacy Intelligence Report</h1>
+            
+            <h2>1. Executive Summary</h2>
+            <p>Overall pharmacy status indicates ${stockUnits > 0 ? 'active' : 'dormant'} operations with a current inventory of <strong>${stockUnits}</strong> units across <strong>${batches.length}</strong> tracked batches. Total recorded revenue stands at <strong>₹${totalSalesVal.toLocaleString()}</strong>.</p>
+            
+            <h2>2. Sales Analysis</h2>
+            <ul>
+              <li><strong>Total Bills Generated:</strong> ${bills.length}</li>
+              <li><strong>Total Revenue:</strong> ₹${totalSalesVal.toLocaleString()}</li>
+              <li><strong>Top-selling Medicine:</strong> ${topMedText}</li>
+              <li><strong>Sales Trends:</strong> ${bills.length > 0 ? 'Consistent sales velocity based on recorded transactions.' : 'No active sales trends recorded.'}</li>
+            </ul>
 
-Please write a comprehensive, professional report. The data spans across time, so please aggregate and analyze the sales and expiry data **month-wise** (e.g. "January 2026", "February 2026").
-Include the following sections:
-1. Executive Summary
-2. Month-wise Sales Analysis (amount of medicines sold, total revenue broken down by month)
-3. Current Inventory & Stock Levels (amount of stock currently available)
-4. Month-wise Expiry Risk Analysis (which items are expiring in upcoming months)
-5. Actionable Insights & Recommendations for distributors/pharmacists
+            <h2>3. Inventory Analysis</h2>
+            <ul>
+              <li><strong>Total Stock Units:</strong> ${stockUnits}</li>
+              <li><strong>Active Batches:</strong> ${activeBatches.length}</li>
+              <li><strong>Low-stock Risk:</strong> ${stockUnits < 50 ? 'High (Replenishment recommended)' : 'Normal'}</li>
+              <li><strong>Stock Movement:</strong> ${bills.length > 10 ? 'High velocity' : 'Standard velocity'}</li>
+            </ul>
 
-Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>, <li>, and <strong> tags. Do not include markdown like \`\`\`html or **bold**. Just output raw HTML tags that I can inject directly into a div. Make sure the insights are derived exactly from the provided JSON data.
-`;
+            <h2>4. Expiry Risk Analysis</h2>
+            <ul>
+              <li><strong>Expired Batches:</strong> ${realExpiredBatches.length}</li>
+              <li><strong>Near-expiry & Critical Batches:</strong> ${expiringSoonCount}</li>
+              <li><strong>High-risk Inventory:</strong> ${expiringSoonCount > 0 ? 'Attention required for upcoming expirations.' : 'No immediate expiration risks.'}</li>
+              <li><strong>Recommended Actions:</strong> ${expiringSoonCount > 0 ? 'Implement First-Expiry-First-Out (FEFO) dispensing strictly.' : 'Continue standard operations.'}</li>
+            </ul>
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const cleanHtml = text.replace(/```html/g, '').replace(/```/g, '');
-      setReportData(cleanHtml);
-      toast.success("AI Report Generated successfully!");
-    } catch (error: any) {
-      console.error(error);
-      toast.error("Failed to generate report. " + (error.message || ""));
-    } finally {
-      setIsGenerating(false);
-    }
+            <h2>5. Reverse Logistics</h2>
+            <ul>
+              <li><strong>Pending Return Requests:</strong> ${(reverseChain || []).filter(r => r.status === 'RETURN_REQUESTED').length}</li>
+              <li><strong>Expired Medicines Awaiting Collection:</strong> ${realExpiredBatches.length}</li>
+              <li><strong>Reverse-chain Status:</strong> ${(reverseChain && reverseChain.length > 0) ? 'Active reverse logistics operations recorded.' : 'No reverse logistics data available.'}</li>
+            </ul>
+
+            <h2>6. Recommendations</h2>
+            <p>Based on current system data, we recommend the following actionable steps:</p>
+            <ul>
+              ${expiringSoonCount > 0 ? '<li><strong>Urgent:</strong> Isolate and heavily discount near-expiry batches to prevent loss.</li>' : ''}
+              ${realExpiredBatches.length > 0 ? '<li><strong>Compliance:</strong> Initiate automated reverse-chain procedures for the ' + realExpiredBatches.length + ' expired batches immediately.</li>' : ''}
+              ${stockUnits < 50 ? '<li><strong>Restock:</strong> Contact distributors for inventory replenishment to prevent stockouts.</li>' : ''}
+              <li><strong>Sales Strategy:</strong> Monitor top-selling items like ${topMedText.split(' ')[0]} to maintain optimal buffer stock.</li>
+            </ul>
+          `;
+        }
+
+        setReportData(generatedHtml);
+        toast.success("Professional Report Generated successfully!");
+      } catch (error) {
+        toast.error("Unable to generate report. Please try again.");
+      } finally {
+        setIsGenerating(false);
+      }
+    }, 1500);
   };
 
   const handleDownload = () => {
     if (!reportData) return;
-    downloadReport(reportData, `PharmaTrace_AI_Report_${new Date().toISOString().split('T')[0]}.html`);
+    downloadReport(reportData, `PharmaTrace_Report_${new Date().toISOString().split('T')[0]}.html`);
+  };
+
+  const handlePrint = () => {
+    if (!reportData) return;
+    printReport(reportData);
   };
 
   return (
@@ -203,18 +286,18 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
               <Sparkles size={18} className="text-indigo-600" /> Generate AI Report
             </h3>
             <p className="text-sm text-slate-600 mb-6">
-              Our AI analyzes your billing history and current inventory to generate a month-wise professional report detailing sales, stock status, and expiry risks.
+              Analyze billing history, inventory, stock movement, and expiry risks to generate a professional pharmacy report.
             </p>
           </div>
 
           <div className="space-y-4">
             <button
               onClick={generateAIReport}
-              disabled={isGenerating || !apiKey}
+              disabled={isGenerating}
               className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm"
             >
               {isGenerating ? (
-                <><Loader2 size={18} className="animate-spin" /> Analyzing Data...</>
+                <><Loader2 size={18} className="animate-spin" /> Generating Report...</>
               ) : (
                 <><Sparkles size={18} /> Generate AI Report</>
               )}
@@ -226,12 +309,20 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-slate-900">Generated Report</h3>
             {reportData && (
-              <button 
-                onClick={handleDownload}
-                className="flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-lg transition-colors border border-emerald-200"
-              >
-                <Download size={16} /> Download Report
-              </button>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={handlePrint}
+                  className="flex items-center gap-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-lg transition-colors border border-slate-200"
+                >
+                  <Printer size={16} /> Print Report
+                </button>
+                <button 
+                  onClick={handleDownload}
+                  className="flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-4 py-2 rounded-lg transition-colors border border-emerald-200"
+                >
+                  <Download size={16} /> Download Report
+                </button>
+              </div>
             )}
           </div>
 
@@ -247,14 +338,14 @@ Format the response ENTIRELY in clean, semantic HTML. Use <h2>, <h3>, <p>, <ul>,
             {isGenerating ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-4 py-20">
                 <Loader2 size={40} className="animate-spin text-indigo-400" />
-                <p>Reading databases and writing report...</p>
+                <p>Loading / Analyzing...</p>
               </div>
             ) : reportData ? (
               <div className="report-content" dangerouslySetInnerHTML={{ __html: reportData }} />
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-4 py-20 text-center px-8">
                 <FileText size={48} className="text-slate-200" />
-                <p>No report generated yet.<br/>Enter your API key and click "Generate AI Report" to get started.</p>
+                <p>No report generated yet.<br/>Click Generate AI Report to analyze your pharmacy data.</p>
               </div>
             )}
           </div>

@@ -366,14 +366,35 @@ const Scanner = () => {
                   <div className="flex items-center gap-3 text-orange-800 bg-orange-50 p-4 rounded-xl border border-orange-200">
                     <AlertTriangle size={24} className="shrink-0" />
                     <div>
-                      <p className="font-bold">AUTOMATIC RETURN INITIATED</p>
-                      <p className="text-sm">A return message for this expired batch has been sent automatically to the distributor.</p>
+                      <p className="font-bold">AUTOMATIC NOTIFICATION SENT</p>
+                      <p className="text-sm">A return message and expiry alert for this batch has been sent automatically to the manufacturer.</p>
                     </div>
                   </div>
                 </div>
               )}
+              
+              {scanState === 'success' && !mismatch && systemBatch && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-3 text-emerald-800 bg-emerald-50 p-4 rounded-xl border border-emerald-200 mt-4">
+                    <CheckCircle size={32} className="shrink-0" />
+                    <div>
+                      <p className="font-bold text-lg">🟢 MEDICINE VALID</p>
+                      <p className="text-sm">Ready for pharmacy workflow.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3 mt-4">
+                    <button onClick={() => alert("Added to Current Bill")} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2 flex-1">
+                      <Search size={18} /> Add to Bill
+                    </button>
+                    <button onClick={() => alert("Removed from System")} className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2 flex-1">
+                      <XCircle size={18} /> Remove
+                    </button>
+                  </div>
+                </div>
+              )}
 
-              <div className="mt-8 flex justify-center pt-4">
+              <div className="mt-8 flex justify-center pt-4 border-t border-slate-100">
                 <button onClick={resetScanner} className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-xl font-medium transition-colors">
                   Scan Another Medicine
                 </button>

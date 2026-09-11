@@ -15,7 +15,8 @@ import Batches from './pages/Batches';
 import BatchDetails from './pages/BatchDetails';
 import Scanner from './pages/Scanner';
 import ExpiryAlerts from './pages/ExpiryAlerts';
-import Returns from './pages/Returns';
+import CreateReturn from './pages/pharmacy/CreateReturn';
+import ReturnTracking from './pages/shared/ReturnTracking';
 import Logistics from './pages/Logistics';
 import Destruction from './pages/Destruction';
 import FraudDetection from './pages/FraudDetection';
@@ -41,6 +42,7 @@ import MfrNotifications from './pages/manufacturer/Notifications';
 import MfrCompanyProfile from './pages/manufacturer/CompanyProfile';
 import MfrSettings from './pages/manufacturer/Settings';
 
+import EBillView from './pages/EBillView';
 import DistributorReports from './pages/distributor/DistributorReports';
 
 function App() {
@@ -52,6 +54,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/e-bill" element={<EBillView />} />
             
             {/* Manufacturer Routes */}
             <Route path="/manufacturer" element={<ProtectedRoute allowedRoles={['manufacturer']} />}>
@@ -67,6 +70,8 @@ function App() {
                 <Route path="expiry-alerts" element={<MfrExpiryAlerts />} />
                 <Route path="activity" element={<MfrSalesActivity />} />
                 <Route path="reports" element={<MfrReports />} />
+                <Route path="returns" element={<ReturnTracking />} />
+
                 <Route path="add-customer" element={<MfrAddCustomer />} />
                 <Route path="notifications" element={<MfrNotifications />} />
                 <Route path="profile" element={<MfrCompanyProfile />} />
@@ -83,7 +88,8 @@ function App() {
                 <Route path="batches/:id" element={<BatchDetails />} />
                 <Route path="scanner" element={<Scanner />} />
                 <Route path="expiry" element={<ExpiryAlerts />} />
-                <Route path="returns" element={<Returns />} />
+                <Route path="returns" element={<ReturnTracking />} />
+                <Route path="create-return" element={<CreateReturn />} />
                 <Route path="logistics" element={<Logistics />} />
                 <Route path="reports" element={<DistributorReports />} />
                 <Route path="analytics" element={<Analytics />} />
@@ -100,7 +106,8 @@ function App() {
                 <Route path="batches/:id" element={<BatchDetails />} />
                 <Route path="scanner" element={<Scanner />} />
                 <Route path="expiry" element={<ExpiryAlerts />} />
-                <Route path="returns" element={<Returns />} />
+                <Route path="returns" element={<ReturnTracking />} />
+                <Route path="create-return" element={<CreateReturn />} />
                 <Route path="logistics" element={<Logistics />} />
                 <Route path="billing" element={<Billing />} />
                 <Route path="reports" element={<Analytics />} />

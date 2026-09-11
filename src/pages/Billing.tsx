@@ -4,6 +4,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { Search, Plus, Minus, Trash2, Camera, Receipt, AlertOctagon, CheckCircle2, AlertTriangle, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { BatchRecord, Product } from '../data/db';
+import QRCode from 'react-qr-code';
 
 const Billing = () => {
   const { currentBill, updateQuantity, removeFromBill, generateBill, batches, products, addToBill, findProductByBarcode, getBatchesForProduct, addInventoryItem } = usePOS();
@@ -82,10 +83,8 @@ const Billing = () => {
     } else {
       if (parsedQr) {
         setUnrecognizedQrData(parsedQr);
-        toast.error('Product not found in inventory. Please set pricing to add it.');
       } else {
         setUnrecognizedQrData(null);
-        toast.error('Product not found. Please add this product to inventory.');
       }
       setScannedProduct(null);
       setAvailableBatches([]);
@@ -124,8 +123,10 @@ const Billing = () => {
   const handleGenerateBill = () => {
     const bill = generateBill();
     if (bill) {
+      const eBillUrl = `${window.location.origin}/e-bill?data=${btoa(JSON.stringify(bill))}`;
+      
       toast.custom((t) => (
-        <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-xl rounded-2xl pointer-events-auto flex flex-col p-6 border border-slate-200`}>
+        <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-2xl rounded-2xl pointer-events-auto flex flex-col p-6 border border-slate-200`}>
           <div className="text-center mb-4">
             <h2 className="text-xl font-bold text-slate-800">PHARMAX</h2>
             <p className="text-sm text-slate-500 uppercase tracking-widest">Digital Invoice</p>
@@ -134,6 +135,7 @@ const Billing = () => {
             <span className="text-slate-500">Bill No: {bill.billNumber}</span>
             <span className="text-slate-500">Date: {new Date(bill.date).toLocaleDateString()}</span>
           </div>
+          
           <div className="border-t border-b border-slate-200 py-3 mb-4 space-y-2">
             <div className="flex justify-between text-xs font-bold text-slate-500 uppercase">
               <span className="w-1/2">Medicine / Batch</span>
@@ -151,16 +153,25 @@ const Billing = () => {
               </div>
             ))}
           </div>
-          <div className="flex justify-between font-bold text-lg">
+          <div className="flex justify-between font-bold text-lg mb-6">
             <span>Total:</span>
             <span>₹{bill.total}</span>
           </div>
-          <div className="mt-6 flex gap-2">
-            <button onClick={() => toast.dismiss(t.id)} className="flex-1 bg-slate-100 hover:bg-slate-200 py-2 rounded-lg font-medium transition-colors">Close</button>
-            <button onClick={() => { alert('Downloading PDF...'); toast.dismiss(t.id); }} className="flex-1 bg-emerald-600 text-white py-2 rounded-lg font-medium hover:bg-emerald-700 transition-colors">Download</button>
+          
+          <div className="flex flex-col items-center bg-slate-50 rounded-xl p-4 border border-slate-200 mb-6">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Consumer E-Bill QR</p>
+            <div className="bg-white p-2 rounded-xl shadow-sm border border-slate-100 mb-2">
+              <QRCode value={eBillUrl} size={140} />
+            </div>
+            <p className="text-[10px] text-slate-400 text-center max-w-[200px]">Customer can scan this QR code to download their PDF receipt instantly.</p>
+          </div>
+          
+          <div className="flex gap-2">
+            <button onClick={() => toast.dismiss(t.id)} className="flex-1 bg-slate-100 hover:bg-slate-200 py-3 rounded-lg font-medium transition-colors text-sm text-slate-700">Close</button>
+            <button onClick={() => { window.open(eBillUrl, '_blank'); toast.dismiss(t.id); }} className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700 transition-colors text-sm flex items-center justify-center gap-2">View & Download E-Bill</button>
           </div>
         </div>
-      ), { duration: 10000 });
+      ), { duration: Infinity });
     }
   };
 

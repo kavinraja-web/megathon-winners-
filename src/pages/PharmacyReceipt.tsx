@@ -32,7 +32,7 @@ const PharmacyReceipt = () => {
   const processReceipt = async () => {
     if (!image) return;
     if (!apiKey) {
-      setError('Please enter your Gemini API Key below to use the AI extraction feature.');
+      setError('Gemini API Key is missing from environment variables.');
       return;
     }
 
