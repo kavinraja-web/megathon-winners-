@@ -61,6 +61,17 @@ export interface DestructionRecord {
   status: string;
 }
 
+export interface StockRequestRecord {
+  id: string;
+  batchNumber: string;
+  productName: string;
+  distributorId: string;
+  requestedQuantity: number;
+  month: string;
+  status: string; // PENDING, APPROVED, REJECTED
+  dateRequested: string;
+}
+
 const INITIAL_PRODUCTS: Product[] = [
   { id: 'P001', name: 'Paracetamol 500mg', genericName: 'Paracetamol', manufacturer: 'ABC Pharma', category: 'Tablet', barcode: '8901234567890' },
   { id: 'P002', name: 'Azithromycin 500mg', genericName: 'Azithromycin', manufacturer: 'MediCare Labs', category: 'Tablet', barcode: '8901234567891' },
@@ -95,6 +106,9 @@ export const initDB = () => {
   if (!localStorage.getItem('PHARMAX_DESTRUCTION_RECORDS')) {
     localStorage.setItem('PHARMAX_DESTRUCTION_RECORDS', JSON.stringify(INITIAL_DESTRUCTION_RECORDS));
   }
+  if (!localStorage.getItem('PHARMAX_STOCK_REQUESTS')) {
+    localStorage.setItem('PHARMAX_STOCK_REQUESTS', JSON.stringify([]));
+  }
 };
 
 export const resetDB = () => {
@@ -103,6 +117,7 @@ export const resetDB = () => {
   localStorage.setItem('PHARMAX_BILLS', JSON.stringify([]));
   localStorage.setItem('PHARMAX_REVERSE_CHAIN', JSON.stringify([]));
   localStorage.setItem('PHARMAX_DESTRUCTION_RECORDS', JSON.stringify(INITIAL_DESTRUCTION_RECORDS));
+  localStorage.setItem('PHARMAX_STOCK_REQUESTS', JSON.stringify([]));
 };
 
 export const getProducts = (): Product[] => JSON.parse(localStorage.getItem('PHARMAX_PRODUCTS') || '[]');
@@ -110,8 +125,10 @@ export const getBatches = (): BatchRecord[] => JSON.parse(localStorage.getItem('
 export const getBills = (): BillRecord[] => JSON.parse(localStorage.getItem('PHARMAX_BILLS') || '[]');
 export const getReverseChain = (): ReverseChainRecord[] => JSON.parse(localStorage.getItem('PHARMAX_REVERSE_CHAIN') || '[]');
 export const getDestructionRecords = (): DestructionRecord[] => JSON.parse(localStorage.getItem('PHARMAX_DESTRUCTION_RECORDS') || '[]');
+export const getStockRequests = (): StockRequestRecord[] => JSON.parse(localStorage.getItem('PHARMAX_STOCK_REQUESTS') || '[]');
 
 export const saveBatches = (batches: BatchRecord[]) => localStorage.setItem('PHARMAX_BATCHES', JSON.stringify(batches));
 export const saveBills = (bills: BillRecord[]) => localStorage.setItem('PHARMAX_BILLS', JSON.stringify(bills));
 export const saveReverseChain = (records: ReverseChainRecord[]) => localStorage.setItem('PHARMAX_REVERSE_CHAIN', JSON.stringify(records));
 export const saveProducts = (products: Product[]) => localStorage.setItem('PHARMAX_PRODUCTS', JSON.stringify(products));
+export const saveStockRequests = (records: StockRequestRecord[]) => localStorage.setItem('PHARMAX_STOCK_REQUESTS', JSON.stringify(records));
