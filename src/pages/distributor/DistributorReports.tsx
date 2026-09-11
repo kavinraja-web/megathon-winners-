@@ -46,6 +46,7 @@ const DistributorReports = () => {
 
   const handleExportCSV = () => {
     if (filteredReports.length === 0) {
+      toast.error("No data available to export.");
       return;
     }
 
@@ -81,10 +82,12 @@ const DistributorReports = () => {
 
   const handleSharePDF = () => {
     if (!pharmacistId) {
+      toast.error("Please enter a Pharmacist Unique ID");
       return;
     }
     
     if (filteredReports.length === 0) {
+      toast.error("No data available to share.");
       return;
     }
 
