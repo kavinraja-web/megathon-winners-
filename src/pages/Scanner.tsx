@@ -4,7 +4,10 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { getMfrBatches } from '../data/manufacturerData';
 import { supabase } from '../lib/supabase';
 
+import { useNavigate } from 'react-router-dom';
+
 const Scanner = () => {
+  const navigate = useNavigate();
   const [scanState, setScanState] = useState<'idle' | 'scanning' | 'success' | 'fraud' | 'expired' | 'invalid' | 'destroyed'>('idle');
   const [batchId, setBatchId] = useState('');
   const [isCameraOpen, setIsCameraOpen] = useState(false);
@@ -396,8 +399,8 @@ const Scanner = () => {
                   </div>
                   
                   <div className="flex gap-3 mt-4">
-                    <button onClick={() => alert("Added to Current Bill")} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2 flex-1">
-                      <Search size={18} /> Add to Bill
+                    <button onClick={() => navigate('/pharmacy/billing')} className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2 flex-1">
+                      <Search size={18} /> Proceed to Billing
                     </button>
                     <button onClick={() => alert("Removed from System")} className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2 flex-1">
                       <XCircle size={18} /> Remove
