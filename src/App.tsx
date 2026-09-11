@@ -44,6 +44,8 @@ import MfrSettings from './pages/manufacturer/Settings';
 
 import EBillView from './pages/EBillView';
 import DistributorReports from './pages/distributor/DistributorReports';
+import PharmacyRequestStock from './pages/pharmacy/RequestStock';
+import DistributorStockRequests from './pages/distributor/StockRequests';
 
 function App() {
   return (
@@ -59,7 +61,7 @@ function App() {
             {/* Manufacturer Routes */}
             <Route path="/manufacturer" element={<ProtectedRoute allowedRoles={['manufacturer']} />}>
               <Route element={<ManufacturerLayout />}>
-                <Route index element={<Navigate to="/manufacturer/dashboard" replace />} />
+                <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<MfrDashboard />} />
                 <Route path="batches" element={<MfrBatches />} />
                 <Route path="add-batch" element={<MfrAddBatch />} />
@@ -82,7 +84,7 @@ function App() {
             {/* Distributor Routes */}
             <Route path="/distributor" element={<ProtectedRoute allowedRoles={['distributor']} />}>
               <Route element={<Layout />}>
-                <Route index element={<Navigate to="/distributor/dashboard" replace />} />
+                <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="batches" element={<Batches />} />
                 <Route path="batches/:id" element={<BatchDetails />} />
@@ -92,15 +94,19 @@ function App() {
                 <Route path="create-return" element={<CreateReturn />} />
                 <Route path="logistics" element={<Logistics />} />
                 <Route path="reports" element={<DistributorReports />} />
+                <Route path="stock-requests" element={<DistributorStockRequests />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="notifications" element={<Notifications />} />
+                <Route path="destruction" element={<Destruction />} />
+                <Route path="fraud" element={<FraudDetection />} />
+                <Route path="audit" element={<AuditTrail />} />
               </Route>
             </Route>
 
             {/* Pharmacy Routes */}
             <Route path="/pharmacy" element={<ProtectedRoute allowedRoles={['pharmacy']} />}>
               <Route element={<Layout />}>
-                <Route index element={<Navigate to="/pharmacy/dashboard" replace />} />
+                <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="batches" element={<Batches />} />
                 <Route path="batches/:id" element={<BatchDetails />} />
@@ -108,6 +114,7 @@ function App() {
                 <Route path="expiry" element={<ExpiryAlerts />} />
                 <Route path="returns" element={<ReturnTracking />} />
                 <Route path="create-return" element={<CreateReturn />} />
+                <Route path="request-stock" element={<PharmacyRequestStock />} />
                 <Route path="logistics" element={<Logistics />} />
                 <Route path="billing" element={<Billing />} />
                 <Route path="reports" element={<Analytics />} />

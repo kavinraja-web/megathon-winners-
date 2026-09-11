@@ -279,8 +279,8 @@ const Billing = () => {
                       <span className="text-sm font-medium text-slate-600">Stock: {batch.quantity}</span>
                       
                       {batch.status === 'EXPIRED' || batch.status === 'RETURN_REQUESTED' ? (
-                        <button disabled className="bg-orange-100 text-orange-700 px-4 py-1.5 rounded-lg text-sm font-bold cursor-not-allowed flex items-center gap-1">
-                          <AlertTriangle size={14} /> AUTO-RETURNED TO DISTRIBUTOR
+                        <button disabled className="bg-red-100 text-red-700 px-4 py-1.5 rounded-lg text-sm font-bold cursor-not-allowed flex items-center gap-1">
+                          <AlertTriangle size={14} /> Bill can't be generated
                         </button>
                       ) : batch.status === 'PERMANENTLY_CLOSED' ? (
                         <button disabled className="bg-slate-200 text-slate-500 px-4 py-1.5 rounded-lg text-sm font-bold cursor-not-allowed flex items-center gap-1">
