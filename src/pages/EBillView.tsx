@@ -43,47 +43,48 @@ const EBillView = () => {
   }
 
   return (
-    <>
-      <style>
-        {`
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            .print-area, .print-area * {
-              visibility: visible;
-            }
-            .print-area {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              box-shadow: none !important;
-              border: none !important;
-            }
-            .no-print {
-              display: none !important;
-            }
+    <div className="min-h-screen bg-slate-100 p-4 py-8 md:py-12 flex flex-col items-center">
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
           }
-        `}
-      </style>
-      <div className="min-h-screen bg-slate-100 p-4 py-8 md:py-12 flex flex-col items-center">
-        <div className="w-full max-w-2xl flex justify-between items-center mb-6 no-print">
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <CheckCircle className="text-emerald-500" /> Digital E-Bill Verified
-          </h1>
-          <button 
-            onClick={downloadPDF}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2"
-          >
-            <Download size={18} /> Save as PDF
-          </button>
-        </div>
+          #printable-invoice, #printable-invoice * {
+            visibility: visible;
+          }
+          #printable-invoice {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 20px;
+            box-shadow: none;
+            border: none;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
 
-        <div 
-          ref={invoiceRef}
-          className="print-area w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-lg border border-slate-200"
+      <div className="w-full max-w-2xl flex justify-between items-center mb-6 no-print">
+        <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          <CheckCircle className="text-emerald-500" /> Digital E-Bill Verified
+        </h1>
+        <button 
+          onClick={downloadPDF}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2"
         >
+          <Download size={18} /> Save as PDF
+        </button>
+      </div>
+
+      <div 
+        id="printable-invoice"
+        ref={invoiceRef}
+        className="w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-lg border border-slate-200"
+      >
         {/* Invoice Header */}
         <div className="flex justify-between items-start border-b border-slate-200 pb-8 mb-8">
           <div>
@@ -168,9 +169,8 @@ const EBillView = () => {
             This digital receipt verifies that the medicines purchased have been authenticated via the Pharma Trace system.
           </p>
         </div>
-        </div>
       </div>
-    </>
+    </div>
   );
 };
 
